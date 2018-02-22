@@ -19,6 +19,7 @@ class Episode(Model):
     seq_number = IntegerField()
     number = CharField()
     date = DateTimeField(null=True)
+    season = ForeignKeyField(Season, backref='episodes')
 
     class Meta:
         database = connection
@@ -71,18 +72,9 @@ class Victory(Model):
         database = connection
 
 
-class SeasonEpisode(Model):
-    id = AutoField()
-    season = ForeignKeyField(Season)
-    episode = ForeignKeyField(Episode)
-
-    class Meta:
-        database = connection
-
-
 class EpisodePlayer(Model):
     id = AutoField()
-    episode = ForeignKeyField(Episode,)
+    episode = ForeignKeyField(Episode)
     player = ForeignKeyField(Player)
 
     class Meta:
@@ -108,7 +100,7 @@ class EpisodeVictory(Model):
 
 
 def create_tables():
-    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, SeasonEpisode, EpisodePlayer, EpisodeDeath,
+    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, EpisodePlayer, EpisodeDeath,
               EpisodeVictory]
     for model in models:
         model.create_table()

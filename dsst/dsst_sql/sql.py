@@ -14,21 +14,22 @@ class Season(Model):
         database = connection
 
 
-class Episode(Model):
+class Player(Model):
     id = AutoField()
-    seq_number = IntegerField()
-    number = CharField()
-    date = DateTimeField(null=True)
-    season = ForeignKeyField(Season, backref='episodes')
+    name = CharField()
+    hex_id = CharField(null=True)
 
     class Meta:
         database = connection
 
 
-class Player(Model):
+class Episode(Model):
     id = AutoField()
-    name = CharField()
-    hex_id = CharField(null=True)
+    seq_number = IntegerField()
+    number = CharField()
+    date = DateField(null=True)
+    season = ForeignKeyField(Season, backref='episodes')
+    players = ManyToManyField(Player, backref='episodes')
 
     class Meta:
         database = connection
@@ -46,6 +47,7 @@ class Drink(Model):
 class Enemy(Model):
     id = AutoField()
     name = CharField()
+    season = ForeignKeyField(Season, backref='enemies')
 
     class Meta:
         database = connection
@@ -57,6 +59,7 @@ class Death(Model):
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
     penalty = ForeignKeyField(Drink)
+    episode = ForeignKeyField(Episode, backref='deaths')
 
     class Meta:
         database = connection
@@ -67,41 +70,14 @@ class Victory(Model):
     info = CharField(null=True)
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
-
-    class Meta:
-        database = connection
-
-
-class EpisodePlayer(Model):
-    id = AutoField()
-    episode = ForeignKeyField(Episode)
-    player = ForeignKeyField(Player)
-
-    class Meta:
-        database = connection
-
-
-class EpisodeDeath(Model):
-    id = AutoField()
-    episode = ForeignKeyField(Episode)
-    death = ForeignKeyField(Death)
-
-    class Meta:
-        database = connection
-
-
-class EpisodeVictory(Model):
-    id = AutoField()
-    episode = ForeignKeyField(Episode)
-    victory = ForeignKeyField(Victory)
+    episode = ForeignKeyField(Episode, backref='victories')
 
     class Meta:
         database = connection
 
 
 def create_tables():
-    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, EpisodePlayer, EpisodeDeath,
-              EpisodeVictory]
+    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, Episode.players.get_through_model()]
     for model in models:
         model.create_table()
 

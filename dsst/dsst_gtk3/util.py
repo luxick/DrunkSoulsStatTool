@@ -6,4 +6,4 @@ class Util:
         if tree_iter:
             return combo.get_model().get_value(tree_iter, index)
         else:
-            return None
+            return -1

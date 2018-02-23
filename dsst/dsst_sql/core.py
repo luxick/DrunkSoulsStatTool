@@ -1,4 +1,4 @@
-from dsst_sql import models, sql
+from dsst_sql import sql
 
 
 class DSSTCore:

@@ -58,8 +58,18 @@ class Death(Model):
     info = CharField(null=True)
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
-    penalty = ForeignKeyField(Drink)
     episode = ForeignKeyField(Episode, backref='deaths')
+
+    class Meta:
+        database = connection
+
+
+class Penalty(Model):
+    id = AutoField()
+    size = DecimalField()
+    ForeignKeyField(Drink)
+    ForeignKeyField(Player, backref='penalties')
+    ForeignKeyField(Death, backref='penalties')
 
     class Meta:
         database = connection
@@ -77,8 +87,11 @@ class Victory(Model):
 
 
 def create_tables():
-    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, Episode.players.get_through_model()]
+    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, Penalty, Episode.players.get_through_model()]
     for model in models:
         model.create_table()
 
 
+def drop_tables():
+    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, Penalty, Episode.players.get_through_model()]
+    connection.drop_tables(models)

@@ -1,10 +1,9 @@
-from dsst_gtk3.gtk_ui import DSSTGtkUi
-from dsst_gtk3 import dialogs, util
+from dsst_gtk3 import dialogs, gtk_ui
 from dsst_sql import sql
 
 
 class PlayerHandlers:
-    def __init__(self, app: DSSTGtkUi):
+    def __init__(self, app: 'gtk_ui.GtkUi'):
         self.app = app
 
     def do_manage_players(self, *_):

@@ -3,6 +3,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from datetime import datetime
 from dsst_sql import sql
+from dsst_gtk3 import util
 
 
 def enter_string_dialog(builder: Gtk.Builder, title: str, value=None) -> str:
@@ -105,3 +106,41 @@ def show_manage_drinks_dialog(builder: Gtk.Builder):
     result = dialog.run()
     dialog.hide()
     return result
+
+
+def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Death=None):
+    dialog = builder.get_object("edit_death_dialog")  # type: Gtk.Dialog
+    dialog.set_transient_for(builder.get_object("main_window"))
+    with sql.connection.atomic():
+        if death:
+            index = util.Util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
+            builder.get_object('edit_death_enemy_combo').set_active(index)
+
+        # TODO Default drink should be set in config
+        default_drink = sql.Drink.get().name
+        store = builder.get_object('player_penalties_store')
+        store.clear()
+        for player in builder.get_object('episode_players_store'):
+            store.append([None, player[1], default_drink, player[0]])
+
+        # Run the dialog
+        result = dialog.run()
+        dialog.hide()
+
+        if result != Gtk.ResponseType.OK:
+            sql.connection.rollback()
+            return False
+        # Collect info from widgets and save to database
+        player_id = util.Util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
+        enemy_id = util.Util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
+        comment = builder.get_object('edit_death_comment_entry').get_text()
+        if not death:
+            death = sql.Death.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
+
+        store = builder.get_object('player_penalties_store')
+        size = builder.get_object('edit_death_size_spin').get_value()
+        for entry in store:
+            drink_id = sql.Drink.get(sql.Drink.name == entry[2])
+            sql.Penalty.create(size=size, player=entry[3], death=death.id, drink=drink_id)
+
+        return True

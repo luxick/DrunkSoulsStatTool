@@ -23,7 +23,7 @@ class DialogHandlers:
         if entry.get_text():
             store = self.app.ui.get_object('enemy_season_store')
             enemy = sql.Enemy.create(name=entry.get_text(), season=self.app.get_selected_season_id())
-            store.append([enemy.name, False, 0])
+            store.append([enemy.name, False, 0, enemy.id])
             entry.set_text('')
 
     def do_manage_drinks(self, *_):

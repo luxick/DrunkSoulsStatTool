@@ -11,7 +11,7 @@ class SeasonHandlers:
         name = dialogs.enter_string_dialog(self.app.ui, 'Name for the new Season')
         if name:
             sql.Season.create(game_name=name, number=1)
-            self.app.reload_seasons()
+            self.app.reload_base_data()
 
     def do_season_selected(self, *_):
         self.app.reload_for_season()

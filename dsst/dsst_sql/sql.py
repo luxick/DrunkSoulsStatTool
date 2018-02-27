@@ -75,9 +75,9 @@ class Death(Model):
 class Penalty(Model):
     id = AutoField()
     size = DecimalField()
-    ForeignKeyField(Drink)
-    ForeignKeyField(Player, backref='penalties')
-    ForeignKeyField(Death, backref='penalties')
+    drink = ForeignKeyField(Drink)
+    player = ForeignKeyField(Player, backref='penalties')
+    death = ForeignKeyField(Death, backref='penalties')
 
     class Meta:
         database = db

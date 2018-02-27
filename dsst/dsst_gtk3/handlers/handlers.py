@@ -1,11 +1,11 @@
 import gi
-import sql_func
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from dsst_gtk3.handlers.season_handlers import SeasonHandlers
 from dsst_gtk3.handlers.base_data_handlers import BaseDataHandlers
 from dsst_gtk3.handlers.dialog_handlers import DialogHandlers
 from dsst_gtk3.handlers.death_handlers import DeathHandlers
+from dsst_sql import sql_func
 
 
 class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers):

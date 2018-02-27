@@ -1,3 +1,6 @@
+"""
+This module contains UI functions for displaying different dialogs
+"""
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -42,7 +45,7 @@ def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episod
     dialog = builder.get_object("edit_episode_dialog")  # type: Gtk.Dialog
     dialog.set_transient_for(builder.get_object("main_window"))
     dialog.set_title(title)
-    with sql.connection.atomic():
+    with sql.db.atomic():
         if not episode:
             nxt_number = len(sql.Season.get_by_id(season_id).episodes) + 1
             episode = sql.Episode.create(seq_number=nxt_number, number=nxt_number, date=datetime.today(),
@@ -61,7 +64,7 @@ def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episod
         dialog.hide()
 
         if result != Gtk.ResponseType.OK:
-            sql.connection.rollback()
+            sql.db.rollback()
             return False
 
         # Save all changes to Database
@@ -79,6 +82,10 @@ def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episod
 
 
 def show_manage_players_dialog(builder: Gtk.Builder, title: str):
+    """Show a dialog for managing player base data.
+    :param builder: Gtk.Builder object
+    :param title: Title for the dialog
+    """
     dialog = builder.get_object("manage_players_dialog")  # type: Gtk.Dialog
     dialog.set_transient_for(builder.get_object("main_window"))
     dialog.set_title(title)
@@ -109,9 +116,15 @@ def show_manage_drinks_dialog(builder: Gtk.Builder):
 
 
 def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Death=None):
+    """Show a dialog for editing or creating death events.
+    :param builder: A Gtk.Builder object
+    :param episode_id: ID to witch the death event belongs to
+    :param death: (Optional) Death event witch should be edited
+    :return: Gtk.ResponseType of the dialog
+    """
     dialog = builder.get_object("edit_death_dialog")  # type: Gtk.Dialog
     dialog.set_transient_for(builder.get_object("main_window"))
-    with sql.connection.atomic():
+    with sql.db.atomic():
         if death:
             index = util.Util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
             builder.get_object('edit_death_enemy_combo').set_active(index)
@@ -126,10 +139,10 @@ def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Dea
         # Run the dialog
         result = dialog.run()
         dialog.hide()
-
         if result != Gtk.ResponseType.OK:
-            sql.connection.rollback()
-            return False
+            sql.db.rollback()
+            return result
+
         # Collect info from widgets and save to database
         player_id = util.Util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
         enemy_id = util.Util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
@@ -143,4 +156,4 @@ def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Dea
             drink_id = sql.Drink.get(sql.Drink.name == entry[2])
             sql.Penalty.create(size=size, player=entry[3], death=death.id, drink=drink_id)
 
-        return True
+        return result

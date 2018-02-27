@@ -3,6 +3,7 @@ from dsst_sql import sql
 
 
 class DialogHandlers:
+    """ Callback handlers for signals emitted from dialogs of the main window"""
     def __init__(self, app: 'gtk_ui.GtkUi'):
         self.app = app
 

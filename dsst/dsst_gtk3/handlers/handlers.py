@@ -1,26 +1,25 @@
 import gi
+import sql_func
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from dsst_gtk3.handlers.left_column_handlers import LeftColumnHandlers
-from dsst_gtk3.handlers.players import PlayerHandlers
+from dsst_gtk3.handlers.season_handlers import SeasonHandlers
+from dsst_gtk3.handlers.base_data_handlers import BaseDataHandlers
 from dsst_gtk3.handlers.dialog_handlers import DialogHandlers
-from dsst_gtk3.handlers.center_handlers import CenterHandlers
-
-from dsst_sql import sql
+from dsst_gtk3.handlers.death_handlers import DeathHandlers
 
 
-class Handlers(LeftColumnHandlers, PlayerHandlers, DialogHandlers, CenterHandlers):
-    """ Class containing all signal handlers for the GTK GUI """
+class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers):
+    """Single callback handler class derived from specialized handler classes"""
     def __init__(self, app):
         """ Initialize handler class
         :param app: reference to the main application object
         """
         self.app = app
         # Call constructors of superclasses
-        LeftColumnHandlers.__init__(self, app)
-        PlayerHandlers.__init__(self, app)
+        SeasonHandlers.__init__(self, app)
+        BaseDataHandlers.__init__(self, app)
         DialogHandlers.__init__(self, app)
-        CenterHandlers.__init__(self, app)
+        DeathHandlers.__init__(self, app)
 
     @staticmethod
     def do_delete_event(*args):
@@ -33,5 +32,5 @@ class Handlers(LeftColumnHandlers, PlayerHandlers, DialogHandlers, CenterHandler
 
     @staticmethod
     def do_delete_database(*_):
-        sql.drop_tables()
-        sql.create_tables()
+        sql_func.drop_tables()
+        sql_func.create_tables()

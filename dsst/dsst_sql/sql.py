@@ -1,6 +1,14 @@
+"""
+This module contains the ORM class definitions for peewee.
+To access the database import this module an run queries on the classes
+Example:
+from sql import Episode
+query = Episode.select().where(Episode.name == 'MyName')
+"""
+
 from peewee import *
 
-connection = MySQLDatabase('dsst', user='dsst', password='dsst')
+db = MySQLDatabase(None)
 
 
 class Season(Model):
@@ -11,7 +19,7 @@ class Season(Model):
     end_date = DateField(null=True)
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Player(Model):
@@ -20,7 +28,7 @@ class Player(Model):
     hex_id = CharField(null=True)
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Episode(Model):
@@ -32,7 +40,7 @@ class Episode(Model):
     players = ManyToManyField(Player, backref='episodes')
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Drink(Model):
@@ -41,7 +49,7 @@ class Drink(Model):
     vol = DecimalField()
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Enemy(Model):
@@ -50,7 +58,7 @@ class Enemy(Model):
     season = ForeignKeyField(Season, backref='enemies')
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Death(Model):
@@ -61,7 +69,7 @@ class Death(Model):
     episode = ForeignKeyField(Episode, backref='deaths')
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Penalty(Model):
@@ -72,7 +80,7 @@ class Penalty(Model):
     ForeignKeyField(Death, backref='penalties')
 
     class Meta:
-        database = connection
+        database = db
 
 
 class Victory(Model):
@@ -83,15 +91,4 @@ class Victory(Model):
     episode = ForeignKeyField(Episode, backref='victories')
 
     class Meta:
-        database = connection
-
-
-def create_tables():
-    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, Penalty, Episode.players.get_through_model()]
-    for model in models:
-        model.create_table()
-
-
-def drop_tables():
-    models = [Season, Episode, Player, Drink, Enemy, Death, Victory, Penalty, Episode.players.get_through_model()]
-    connection.drop_tables(models)
+        database = db

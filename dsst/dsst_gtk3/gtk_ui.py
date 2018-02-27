@@ -1,17 +1,13 @@
 import gi
-import os
-
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from dsst_gtk3.handlers import handlers
 from dsst_gtk3 import util
-
 from dsst_sql import sql, sql_func
 
 
 class GtkUi:
     """ The main UI class """
-
     def __init__(self):
         # Load Glade UI files
         self.ui = Gtk.Builder()
@@ -26,13 +22,16 @@ class GtkUi:
         self.ui.connect_signals(self.handlers)
         # Show all widgets
         self.ui.get_object('main_window').show_all()
+        # Initialize the database
+        # TODO User input to select database
+        sql.db.init('dsst', user='dsst', password='dsst')
         # Create database if not exists
-        sql.create_tables()
+        sql_func.create_tables()
 
         self.reload_base_data()
-        self.reload_seasons()
 
     def reload_base_data(self):
+        """Reload function for all base data witch is not dependant on selected season or episode"""
         # Rebuild all players store
         self.ui.get_object('all_players_store').clear()
         for player in sql.Player.select():
@@ -41,8 +40,6 @@ class GtkUi:
         self.ui.get_object('drink_store').clear()
         for drink in sql.Drink.select():
             self.ui.get_object('drink_store').append([drink.id, drink.name, str(drink.vol)])
-
-    def reload_seasons(self):
         # Rebuild seasons store
         store = self.ui.get_object('seasons_store')
         store.clear()
@@ -51,6 +48,7 @@ class GtkUi:
 
     # Reload after season was changed ##################################################################################
     def reload_for_season(self):
+        """Reload all data that is dependant on a selected season"""
         season_id = self.get_selected_season_id()
         if season_id is None or season_id == -1:
             return
@@ -82,6 +80,7 @@ class GtkUi:
 
     # Reload after episode was changed #################################################################################
     def reload_for_episode(self):
+        """Reload all data that is dependant on a selected episode"""
         episode_id = self.get_selected_episode_id()
         if not episode_id:
             return
@@ -90,11 +89,17 @@ class GtkUi:
         for player in sql.Episode.get(sql.Episode.id == self.get_selected_episode_id()).players:
             store.append([player.id, player.name, player.hex_id])
 
-    def get_selected_season_id(self):
+    def get_selected_season_id(self) -> int:
+        """Read ID of the selected season from the UI
+        :return: ID of the selected season
+        """
         season_id = util.Util.get_combo_value(self.ui.get_object('season_combo_box'), 0)
         return season_id if season_id != -1 else None
 
     def get_selected_episode_id(self):
+        """Parse ID of the selected episode from the UI
+        :return: ID of the selected episode
+        """
         (model, tree_iter) = self.ui.get_object('episodes_tree_view').get_selection().get_selected()
         return model.get_value(tree_iter, 0) if tree_iter else None
 

@@ -1,7 +1,8 @@
 from dsst_gtk3 import dialogs, gtk_ui
 
 
-class CenterHandlers:
+class DeathHandlers:
+    """Callback handlers for signals related to managing death events"""
     def __init__(self, app: 'gtk_ui.GtkUi'):
         self.app = app
 

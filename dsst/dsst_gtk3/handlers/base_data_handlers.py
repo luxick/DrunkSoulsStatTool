@@ -2,7 +2,8 @@ from dsst_gtk3 import dialogs, gtk_ui
 from dsst_sql import sql
 
 
-class PlayerHandlers:
+class BaseDataHandlers:
+    """Callback handlers for signals related to the manipulation of base data (players, drinks, ...)"""
     def __init__(self, app: 'gtk_ui.GtkUi'):
         self.app = app
 

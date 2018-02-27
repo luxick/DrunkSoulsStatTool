@@ -2,7 +2,8 @@ from dsst_sql import sql
 from dsst_gtk3 import dialogs, gtk_ui
 
 
-class LeftColumnHandlers:
+class SeasonHandlers:
+    """Callback handlers related to signals for managing seasonal data"""
     def __init__(self, app: 'gtk_ui.GtkUi'):
         self.app = app
 

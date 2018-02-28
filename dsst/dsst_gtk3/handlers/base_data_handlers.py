@@ -8,7 +8,7 @@ class BaseDataHandlers:
         self.app = app
 
     def do_manage_players(self, *_):
-        result = dialogs.show_manage_players_dialog(self.app.ui, 'Manage Players')
+        dialogs.show_manage_players_dialog(self.app.ui, 'Manage Players')
 
     def do_add_player(self, entry):
         if entry.get_text():
@@ -17,7 +17,7 @@ class BaseDataHandlers:
             self.app.reload_base_data()
 
     def do_manage_enemies(self, *_):
-        result = dialogs.show_manage_enemies_dialog(self.app.ui, self.app.get_selected_season_id())
+        dialogs.show_manage_enemies_dialog(self.app.ui, self.app.get_selected_season_id())
 
     def on_player_name_edited(self, _, index, value):
         row = self.app.ui.get_object('all_players_store')[index]
@@ -32,6 +32,12 @@ class BaseDataHandlers:
                   .where(sql.Player.id == row[0])\
                   .execute()
         self.app.reload_base_data()
+
+    def do_add_drink(self, entry):
+        if entry.get_text():
+            sql.Drink.create(name=entry.get_text(), vol=0)
+            entry.set_text('')
+            self.app.reload_base_data()
 
     def on_drink_name_edited(self, _, index, value):
         row = self.app.ui.get_object('drink_store')[index]

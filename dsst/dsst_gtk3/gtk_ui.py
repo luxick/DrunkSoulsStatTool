@@ -1,6 +1,10 @@
 from collections import Counter
 
 import gi
+import math
+
+import os
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from dsst_gtk3.handlers import handlers
@@ -10,7 +14,7 @@ from dsst_sql import sql, sql_func
 
 class GtkUi:
     """ The main UI class """
-    def __init__(self):
+    def __init__(self, config: dict):
         # Load Glade UI files
         self.ui = Gtk.Builder()
         glade_resources = [
@@ -18,15 +22,15 @@ class GtkUi:
             ['dsst_gtk3', 'resources', 'glade', 'dialogs.glade']
         ]
         for path in glade_resources:
-            self.ui.add_from_string(util.Util.load_ui_resource_string(path))
+            self.ui.add_from_string(util.load_ui_resource_string(path))
         # Connect signal handlers to UI
         self.handlers = handlers.Handlers(self)
         self.ui.connect_signals(self.handlers)
         # Show all widgets
         self.ui.get_object('main_window').show_all()
+        db_config = config['sql_connections'][0]
         # Initialize the database
-        # TODO User input to select database
-        sql.db.init('dsst', user='dsst', password='dsst')
+        sql.db.init(db_config['db_name'], user=db_config['user'], password=db_config['password'])
         # Create database if not exists
         sql_func.create_tables()
 
@@ -41,7 +45,7 @@ class GtkUi:
         # Rebuild drink store
         self.ui.get_object('drink_store').clear()
         for drink in sql.Drink.select():
-            self.ui.get_object('drink_store').append([drink.id, drink.name, str(drink.vol)])
+            self.ui.get_object('drink_store').append([drink.id, drink.name, '{:.2f}%'.format(drink.vol)])
         # Rebuild seasons store
         store = self.ui.get_object('seasons_store')
         store.clear()
@@ -115,8 +119,13 @@ class GtkUi:
         self.ui.get_object('ep_death_count_label').set_text(str(len(episode.deaths)))
         drink_count = sum(len(death.penalties) for death in episode.deaths)
         self.ui.get_object('ep_drinks_label').set_text(str(drink_count))
-        cl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
-        self.ui.get_object('ep_booze_label').set_text(str(cl_booze) + "cl")
+        self.ui.get_object('ep_player_drinks_label').set_text(str(len(episode.deaths)))
+        dl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
+        l_booze = round(dl_booze / 10, 2)
+        self.ui.get_object('ep_booze_label').set_text('{}l'.format(l_booze))
+        dl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
+        ml_booze = round(dl_booze * 10, 0)
+        self.ui.get_object('ep_player_booze_label').set_text('{}ml'.format(ml_booze))
         enemy_list = [death.enemy.name for death in episode.deaths]
         sorted_list = Counter(enemy_list).most_common(1)
         if sorted_list:
@@ -127,7 +136,7 @@ class GtkUi:
         """Read ID of the selected season from the UI
         :return: ID of the selected season
         """
-        season_id = util.Util.get_combo_value(self.ui.get_object('season_combo_box'), 0)
+        season_id = util.get_combo_value(self.ui.get_object('season_combo_box'), 0)
         return season_id if season_id != -1 else None
 
     def get_selected_episode_id(self):
@@ -139,5 +148,8 @@ class GtkUi:
 
 
 def main():
-    GtkUi()
+    if not os.path.isfile(util.CONFIG_PATH):
+        util.save_config(util.DEFAULT_CONFIG, util.CONFIG_PATH)
+    config = util.load_config(util.CONFIG_PATH)
+    GtkUi(config)
     Gtk.main()

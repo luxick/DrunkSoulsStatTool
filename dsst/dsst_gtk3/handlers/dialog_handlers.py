@@ -11,7 +11,7 @@ class DialogHandlers:
         """ Signal Handler for Add Player to Episode Button in Manage Episode Dialog
         :param combo: Combo box with all the available players
         """
-        player_id = util.Util.get_combo_value(combo, 0)
+        player_id = util.get_combo_value(combo, 0)
         if player_id:
             self.app.ui.get_object('add_player_combo_box').set_active(-1)
             player = sql.Player.get(sql.Player.id == player_id)
@@ -28,10 +28,3 @@ class DialogHandlers:
 
     def do_manage_drinks(self, *_):
         result = dialogs.show_manage_drinks_dialog(self.app.ui)
-
-    def do_add_drink(self, entry):
-        if entry.get_text():
-            store = self.app.ui.get_object('drink_store')
-            drink = sql.Drink.create(name=entry.get_text(), vol='0')
-            store.append([drink.id, drink.name, drink.vol])
-            entry.set_text('')

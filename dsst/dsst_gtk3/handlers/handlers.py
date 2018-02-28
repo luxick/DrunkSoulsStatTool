@@ -24,9 +24,9 @@ class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers, 
         VictoryHandlers.__init__(self, app)
 
     @staticmethod
-    def do_delete_event(*args):
+    def do_delete_event(*_):
         """ Signal will be sent when app should close
-        :param args: Arguments to the delete event
+        :param _: Arguments to the delete event
         """
         Gtk.main_quit()
 

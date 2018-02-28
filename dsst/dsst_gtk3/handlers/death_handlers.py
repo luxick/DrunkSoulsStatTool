@@ -16,5 +16,5 @@ class DeathHandlers:
             self.app.reload_for_season()
             self.app.reload_for_episode()
 
-    def on_penalty_drink_changed(self, widget, path, text):
+    def on_penalty_drink_changed(self, _, path, text):
         self.app.ui.get_object('player_penalties_store')[path][2] = text

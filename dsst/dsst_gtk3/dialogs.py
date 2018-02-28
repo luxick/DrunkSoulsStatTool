@@ -74,10 +74,10 @@ def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episod
         # Update Date of the Episode
         cal_value = builder.get_object('episode_calendar').get_date()
         selected_date = datetime(*cal_value).date()
-        episode.update(date=selected_date,
-                       number=str(builder.get_object("episode_no_spin_button").get_value()),
-                       name=builder.get_object("episode_name_entry").get_text())\
-                .execute()
+        episode.date = selected_date,
+        episode.number = int(builder.get_object("episode_no_spin_button").get_value())
+        episode.name = builder.get_object("episode_name_entry").get_text()
+        episode.save()
         return True
 
 
@@ -117,7 +117,7 @@ def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Dea
     dialog.set_transient_for(builder.get_object("main_window"))
     with sql.db.atomic():
         if death:
-            index = util.Util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
+            index = util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
             builder.get_object('edit_death_enemy_combo').set_active(index)
 
         # TODO Default drink should be set in config
@@ -135,8 +135,8 @@ def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Dea
             return result
 
         # Collect info from widgets and save to database
-        player_id = util.Util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
-        enemy_id = util.Util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
+        player_id = util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
+        enemy_id = util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
         comment = builder.get_object('edit_death_comment_entry').get_text()
         if not death:
             death = sql.Death.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
@@ -165,7 +165,7 @@ def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory: sql
                      ['edit_victory_enemy_combo', victory.enemy.id]]
             for info in infos:
                 combo = builder.get_object(info[0])
-                index = util.Util.get_index_of_combo_model(combo, 0, info[1])
+                index = util.get_index_of_combo_model(combo, 0, info[1])
                 combo.set_active(index)
             builder.get_object('victory_comment_entry').set_text(victory.info)
 
@@ -177,12 +177,15 @@ def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory: sql
             return result
 
         # Collect info from widgets and save to database
-        player_id = util.Util.get_combo_value(builder.get_object('edit_victory_player_combo'), 0)
-        enemy_id = util.Util.get_combo_value(builder.get_object('edit_victory_enemy_combo'), 3)
+        player_id = util.get_combo_value(builder.get_object('edit_victory_player_combo'), 0)
+        enemy_id = util.get_combo_value(builder.get_object('edit_victory_enemy_combo'), 3)
         comment = builder.get_object('victory_comment_entry').get_text()
         if not victory:
             sql.Victory.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
         else:
-            victory.update(player=player_id, enemy=enemy_id, info=comment).execute()
+            victory.player = player_id
+            victory.enemy = enemy_id
+            victory.info = comment
+            victory.save()
 
         return result

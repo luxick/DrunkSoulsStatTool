@@ -20,7 +20,7 @@ class SeasonHandlers:
         season_id = self.app.get_selected_season_id()
         if not season_id:
             return
-        episode = dialogs.show_episode_dialog(self.app.ui, 'Create new Episode', season_id)
+        dialogs.show_episode_dialog(self.app.ui, 'Create new Episode', season_id)
         self.app.reload_for_season()
 
     def on_selected_episode_changed(self, *_):

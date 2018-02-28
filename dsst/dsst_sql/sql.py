@@ -56,6 +56,7 @@ class Drink(Model):
 class Enemy(Model):
     id = AutoField()
     name = CharField()
+    optional = BooleanField()
     season = ForeignKeyField(Season, backref='enemies')
 
     class Meta:

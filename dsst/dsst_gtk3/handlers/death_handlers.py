@@ -9,6 +9,8 @@ class DeathHandlers:
 
     def do_add_death(self, *_):
         ep_id = self.app.get_selected_episode_id()
+        if not ep_id:
+            return
         result = dialogs.show_edit_death_dialog(self.app.ui, ep_id)
         if result == Gtk.ResponseType.OK:
             self.app.reload_for_season()

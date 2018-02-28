@@ -1234,6 +1234,7 @@
                     <child>
                       <object class="GtkMenuItem" id="manage_seasons_item">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Manage Seasons</property>
                         <property name="use_underline">True</property>
@@ -1260,6 +1261,7 @@
                         <property name="label" translatable="yes">Add Death</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="do_add_death" swapped="no"/>
+                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -1268,6 +1270,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Add Victory</property>
                         <property name="use_underline">True</property>
+                        <accelerator key="v" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                   </object>

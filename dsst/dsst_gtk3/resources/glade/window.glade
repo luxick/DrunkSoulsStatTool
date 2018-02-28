@@ -183,28 +183,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkListStore" id="episode_deaths_store">
-    <columns>
-      <!-- column-name id -->
-      <column type="gint"/>
-      <!-- column-name player_name -->
-      <column type="gchararray"/>
-      <!-- column-name enemy_name -->
-      <column type="gchararray"/>
-      <!-- column-name penalty_name -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="episode_players_store">
-    <columns>
-      <!-- column-name id -->
-      <column type="gint"/>
-      <!-- column-name name -->
-      <column type="gchararray"/>
-      <!-- column-name hex_id -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkDialog" id="edit_episode_dialog">
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
@@ -315,6 +293,41 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Episode Name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="episode_name_entry">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Player</property>
                       </object>
                       <packing>
@@ -362,46 +375,53 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkTreeView" id="episode_players_tree_view">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="model">episode_players_store</property>
-                    <property name="search_column">0</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
-                    </child>
+                    <property name="shadow_type">in</property>
                     <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="title" translatable="yes">Name</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
+                      <object class="GtkTreeView" id="episode_players_tree_view">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="model">episode_players_store</property>
+                        <property name="search_column">0</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="title" translatable="yes">Hex ID</property>
                         <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">2</attribute>
-                          </attributes>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">Name</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">Hex ID</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">2</attribute>
+                              </attributes>
+                            </child>
+                          </object>
                         </child>
                       </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -469,6 +489,28 @@
       <placeholder/>
     </child>
   </object>
+  <object class="GtkListStore" id="episode_deaths_store">
+    <columns>
+      <!-- column-name id -->
+      <column type="gint"/>
+      <!-- column-name player_name -->
+      <column type="gchararray"/>
+      <!-- column-name enemy_name -->
+      <column type="gchararray"/>
+      <!-- column-name penalty_name -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="episode_players_store">
+    <columns>
+      <!-- column-name id -->
+      <column type="gint"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name hex_id -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="episode_victories_store"/>
   <object class="GtkListStore" id="episodes_store">
     <columns>
@@ -477,6 +519,8 @@
       <!-- column-name name -->
       <column type="gchararray"/>
       <!-- column-name date -->
+      <column type="gchararray"/>
+      <!-- column-name number -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -1460,6 +1504,9 @@
                             <property name="title" translatable="yes">Episode</property>
                             <child>
                               <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
                             </child>
                           </object>
                         </child>

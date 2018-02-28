@@ -35,6 +35,7 @@ class Episode(Model):
     id = AutoField()
     seq_number = IntegerField()
     number = CharField()
+    name = CharField(null=True)
     date = DateField(null=True)
     season = ForeignKeyField(Season, backref='episodes')
     players = ManyToManyField(Player, backref='episodes')

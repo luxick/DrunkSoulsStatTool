@@ -74,10 +74,10 @@ def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episod
         # Update Date of the Episode
         cal_value = builder.get_object('episode_calendar').get_date()
         selected_date = datetime(*cal_value).date()
-        query = sql.Episode.update(date=selected_date,
-                                   number=int(builder.get_object("episode_no_spin_button").get_value()))\
-                           .where(sql.Episode.id == episode.id)
-        query.execute()
+        episode.update(date=selected_date,
+                       number=str(builder.get_object("episode_no_spin_button").get_value()),
+                       name=builder.get_object("episode_name_entry").get_text())\
+                .execute()
         return True
 
 

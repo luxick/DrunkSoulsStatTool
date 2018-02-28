@@ -60,7 +60,7 @@ class GtkUi:
         model, selected_paths = selection.get_selected_rows()
         model.clear()
         for episode in sql_func.get_episodes_for_season(season_id):
-            model.append([episode.id, episode.number, str(episode.date)])
+            model.append([episode.id, episode.name, str(episode.date), episode.number])
         if selected_paths:
             selection.select_path(selected_paths[0])
         selection.handler_unblock_by_func(self.handlers.on_selected_episode_changed)

@@ -104,8 +104,14 @@ class GtkUi:
             penalties = [f'{number}x {drink}' for drink, number in Counter(penalties).items()]
             penalty_string = ', '.join(penalties)
             store.append([death.id, death.player.name, death.enemy.name, penalty_string])
+        # Reload victory store for notebook view
+        store = self.ui.get_object('episode_victories_store')
+        store.clear()
+        for victory in episode.victories:
+            store.append([victory.id, victory.player.name, victory.enemy.name, victory.info])
 
         # Stat grid
+        self.ui.get_object('ep_stat_title').set_text('Stats for episode {}\n"{}"'.format(episode.number, episode.name))
         self.ui.get_object('ep_death_count_label').set_text(str(len(episode.deaths)))
         drink_count = sum(len(death.penalties) for death in episode.deaths)
         self.ui.get_object('ep_drinks_label').set_text(str(drink_count))

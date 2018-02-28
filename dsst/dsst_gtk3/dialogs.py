@@ -148,3 +148,41 @@ def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Dea
             sql.Penalty.create(size=size, player=entry[3], death=death.id, drink=drink_id)
 
         return result
+
+
+def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory: sql.Victory=None):
+    """Show a dialog for editing or creating victory events.
+    :param builder: A Gtk.Builder object
+    :param episode_id: ID to witch the victory event belongs to
+    :param victory: (Optional) Victory event witch should be edited
+    :return: Gtk.ResponseType of the dialog
+    """
+    dialog = builder.get_object("edit_victory_dialog")  # type: Gtk.Dialog
+    dialog.set_transient_for(builder.get_object("main_window"))
+    with sql.db.atomic():
+        if victory:
+            infos = [['edit_victory_player_combo', victory.player.id],
+                     ['edit_victory_enemy_combo', victory.enemy.id]]
+            for info in infos:
+                combo = builder.get_object(info[0])
+                index = util.Util.get_index_of_combo_model(combo, 0, info[1])
+                combo.set_active(index)
+            builder.get_object('victory_comment_entry').set_text(victory.info)
+
+        # Run the dialog
+        result = dialog.run()
+        dialog.hide()
+        if result != Gtk.ResponseType.OK:
+            sql.db.rollback()
+            return result
+
+        # Collect info from widgets and save to database
+        player_id = util.Util.get_combo_value(builder.get_object('edit_victory_player_combo'), 0)
+        enemy_id = util.Util.get_combo_value(builder.get_object('edit_victory_enemy_combo'), 3)
+        comment = builder.get_object('victory_comment_entry').get_text()
+        if not victory:
+            sql.Victory.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
+        else:
+            victory.update(player=player_id, enemy=enemy_id, info=comment).execute()
+
+        return result

@@ -18,3 +18,31 @@ class BaseDataHandlers:
 
     def do_manage_enemies(self, *_):
         result = dialogs.show_manage_enemies_dialog(self.app.ui, self.app.get_selected_season_id())
+
+    def on_player_name_edited(self, _, index, value):
+        row = self.app.ui.get_object('all_players_store')[index]
+        sql.Player.update(name=value)\
+                  .where(sql.Player.id == row[0])\
+                  .execute()
+        self.app.reload_base_data()
+
+    def on_player_hex_edited(self, _, index, value):
+        row = self.app.ui.get_object('all_players_store')[index]
+        sql.Player.update(hex_id=value)\
+                  .where(sql.Player.id == row[0])\
+                  .execute()
+        self.app.reload_base_data()
+
+    def on_drink_name_edited(self, _, index, value):
+        row = self.app.ui.get_object('drink_store')[index]
+        sql.Drink.update(name=value)\
+                 .where(sql.Drink.id == row[0])\
+                 .execute()
+        self.app.reload_base_data()
+
+    def on_drink_vol_edited(self, _, index, value):
+        row = self.app.ui.get_object('drink_store')[index]
+        sql.Drink.update(vol=value) \
+                 .where(sql.Drink.id == row[0]) \
+                 .execute()
+        self.app.reload_base_data()

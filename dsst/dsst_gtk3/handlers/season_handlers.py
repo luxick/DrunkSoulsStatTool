@@ -25,3 +25,7 @@ class SeasonHandlers:
 
     def on_selected_episode_changed(self, *_):
         self.app.reload_for_episode()
+
+    def on_episode_double_click(self, *_):
+        self.app.reload_for_episode()
+        self.app.ui.get_object('stats_notebook').set_current_page(1)

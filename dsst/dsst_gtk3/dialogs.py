@@ -88,31 +88,22 @@ def show_manage_players_dialog(builder: Gtk.Builder, title: str):
     """
     dialog = builder.get_object("manage_players_dialog")  # type: Gtk.Dialog
     dialog.set_transient_for(builder.get_object("main_window"))
-    dialog.set_title(title)
-
-    result = dialog.run()
+    dialog.run()
     dialog.hide()
-
-    if result == Gtk.ResponseType.OK:
-        pass
 
 
 def show_manage_enemies_dialog(builder: Gtk.Builder, season_id: int):
     dialog = builder.get_object("manage_enemies_dialog")  # type: Gtk.Dialog
     dialog.set_transient_for(builder.get_object("main_window"))
-
-    result = dialog.run()
+    dialog.run()
     dialog.hide()
-
-    return result
 
 
 def show_manage_drinks_dialog(builder: Gtk.Builder):
     dialog = builder.get_object("manage_drinks_dialog")  # type: Gtk.Dialog
     dialog.set_transient_for(builder.get_object("main_window"))
-    result = dialog.run()
+    dialog.run()
     dialog.hide()
-    return result
 
 
 def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Death=None):

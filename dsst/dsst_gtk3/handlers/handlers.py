@@ -6,7 +6,7 @@ from dsst_gtk3.handlers.base_data_handlers import BaseDataHandlers
 from dsst_gtk3.handlers.dialog_handlers import DialogHandlers
 from dsst_gtk3.handlers.death_handlers import DeathHandlers
 from dsst_gtk3.handlers.victory_handlers import VictoryHandlers
-from dsst_sql import sql_func
+from dsst_sql import sql, sql_func
 
 
 class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers, VictoryHandlers):
@@ -28,6 +28,7 @@ class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers, 
         """ Signal will be sent when app should close
         :param _: Arguments to the delete event
         """
+        sql.db.close()
         Gtk.main_quit()
 
     # DEBUG Functions ##################################################################################################

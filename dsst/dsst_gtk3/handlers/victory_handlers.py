@@ -13,5 +13,4 @@ class VictoryHandlers:
             return
         result = dialogs.show_edit_victory_dialog(self.app.ui, ep_id)
         if result == Gtk.ResponseType.OK:
-            self.app.reload_for_season()
-            self.app.reload_for_episode()
+            self.app.reload()

@@ -1,14 +1,9 @@
-from collections import Counter
-
 import gi
-import math
-
 import os
-
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from dsst_gtk3.handlers import handlers
-from dsst_gtk3 import util
+from dsst_gtk3 import util, reload
 from dsst_sql import sql, sql_func
 
 
@@ -36,108 +31,23 @@ class GtkUi:
         self.set_db_status_label(db_config)
         # Create database if not exists
         sql_func.create_tables()
+        self.reload()
 
-        self.reload_base_data()
+    def reload(self):
+        reload.reload_base_data(self.ui, self)
+        season_id = self.get_selected_season_id()
+        if season_id:
+            reload.reload_episodes(self.ui, self, season_id)
+            reload.reload_season_stats(self.ui, self, season_id)
+        else:
+            return
+        episode_id = self.get_selected_episode_id()
+        if episode_id:
+            reload.reload_episode_stats(self.ui, self, episode_id)
 
     def set_db_status_label(self, db_conf: dict):
         self.ui.get_object('connection_label').set_text(f'{db_conf["user"]}@{db_conf["host"]}')
         self.ui.get_object('db_label').set_text(f'{db_conf["db_name"]}')
-
-    def reload_base_data(self):
-        """Reload function for all base data witch is not dependant on selected season or episode"""
-        # Rebuild all players store
-        self.ui.get_object('all_players_store').clear()
-        for player in sql.Player.select():
-            self.ui.get_object('all_players_store').append([player.id, player.name, player.hex_id])
-        # Rebuild drink store
-        self.ui.get_object('drink_store').clear()
-        for drink in sql.Drink.select():
-            self.ui.get_object('drink_store').append([drink.id, drink.name, '{:.2f}%'.format(drink.vol)])
-        # Rebuild seasons store
-        store = self.ui.get_object('seasons_store')
-        store.clear()
-        for season in sql.Season.select().order_by(sql.Season.number):
-            store.append([season.id, season.game_name])
-
-    # Reload after season was changed ##################################################################################
-    def reload_for_season(self):
-        """Reload all data that is dependant on a selected season"""
-        season_id = self.get_selected_season_id()
-        if season_id is None or season_id == -1:
-            return
-        # Rebuild episodes store
-        selection = self.ui.get_object('episodes_tree_view').get_selection()
-        selection.handler_block_by_func(self.handlers.on_selected_episode_changed)
-        model, selected_paths = selection.get_selected_rows()
-        model.clear()
-        for episode in sql_func.get_episodes_for_season(season_id):
-            model.append([episode.id, episode.name, str(episode.date), episode.number])
-        if selected_paths:
-            selection.select_path(selected_paths[0])
-        selection.handler_unblock_by_func(self.handlers.on_selected_episode_changed)
-
-        # Load player stats for season
-        player_stats = {}
-        for episode in sql_func.get_episodes_for_season(season_id):
-            for player in episode.players:
-                player_stats[player.name] = [sql_func.get_player_deaths_for_season(season_id, player.id),
-                                             sql_func.get_player_victories_for_season(season_id, player.id)]
-        store = self.ui.get_object('player_season_store')
-        store.clear()
-        for name, stats in player_stats.items():
-            store.append([name, stats[0], stats[1]])
-        # Load enemy stats for season
-        season = sql.Season.get(sql.Season.id == season_id)
-        enemy_stats = {
-            enemy.name: [False, len(sql.Death.select().where(sql.Death.enemy == enemy)), enemy.id]
-            for enemy in season.enemies}
-        store = self.ui.get_object('enemy_season_store')
-        store.clear()
-        for name, stats in enemy_stats.items():
-            store.append([name, stats[0], stats[1], stats[2]])
-
-    # Reload after episode was changed #################################################################################
-    def reload_for_episode(self):
-        """Reload all data that is dependant on a selected episode"""
-        episode_id = self.get_selected_episode_id()
-        if not episode_id:
-            return
-        episode = sql.Episode.get(sql.Episode.id == episode_id)
-        store = self.ui.get_object('episode_players_store')
-        store.clear()
-        for player in episode.players:
-            store.append([player.id, player.name, player.hex_id])
-        # Reload death store for notebook view
-        store = self.ui.get_object('episode_deaths_store')
-        store.clear()
-        for death in episode.deaths:
-            penalties = [x.drink.name for x in death.penalties]
-            penalties = [f'{number}x {drink}' for drink, number in Counter(penalties).items()]
-            penalty_string = ', '.join(penalties)
-            store.append([death.id, death.player.name, death.enemy.name, penalty_string])
-        # Reload victory store for notebook view
-        store = self.ui.get_object('episode_victories_store')
-        store.clear()
-        for victory in episode.victories:
-            store.append([victory.id, victory.player.name, victory.enemy.name, victory.info])
-
-        # Stat grid
-        self.ui.get_object('ep_stat_title').set_text('Stats for episode {}\n{}'.format(episode.number, episode.name))
-        self.ui.get_object('ep_death_count_label').set_text(str(len(episode.deaths)))
-        drink_count = sum(len(death.penalties) for death in episode.deaths)
-        self.ui.get_object('ep_drinks_label').set_text(str(drink_count))
-        self.ui.get_object('ep_player_drinks_label').set_text(str(len(episode.deaths)))
-        dl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
-        l_booze = round(dl_booze / 10, 2)
-        self.ui.get_object('ep_booze_label').set_text('{}l'.format(l_booze))
-        dl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
-        ml_booze = round(dl_booze * 10, 0)
-        self.ui.get_object('ep_player_booze_label').set_text('{}ml'.format(ml_booze))
-        enemy_list = [death.enemy.name for death in episode.deaths]
-        sorted_list = Counter(enemy_list).most_common(1)
-        if sorted_list:
-            enemy_name, deaths = sorted_list[0]
-            self.ui.get_object('ep_enemy_name_label').set_text(f'{enemy_name} ({deaths} Deaths)')
 
     def get_selected_season_id(self) -> int:
         """Read ID of the selected season from the UI

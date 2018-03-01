@@ -3,6 +3,9 @@ This modules contains general utilities for the GTK application to use.
 """
 import json
 import os
+from contextlib import contextmanager
+from gi.repository import Gtk
+from typing import Callable
 from zipfile import ZipFile
 
 CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.config', 'dsst', 'config.json')
@@ -16,6 +19,17 @@ DEFAULT_CONFIG = {
         'password': 'dsst'}
     ]
 }
+
+
+@contextmanager
+def block_handler(widget: 'Gtk.Widget', handler_func: Callable):
+    """Run an operation while a signal handler for a widget is blocked
+    :param widget: A Gtk widget
+    :param handler_func: Signal handler of the widget to block
+    """
+    widget.handler_block_by_func(handler_func)
+    yield
+    widget.handler_unblock_by_func(handler_func)
 
 
 def get_combo_value(combo, index: int):

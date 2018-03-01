@@ -11,21 +11,20 @@ class SeasonHandlers:
         name = dialogs.enter_string_dialog(self.app.ui, 'Name for the new Season')
         if name:
             sql.Season.create(game_name=name, number=1)
-            self.app.reload_base_data()
+            self.app.reload()
 
     def do_season_selected(self, *_):
-        self.app.reload_for_season()
+        self.app.reload()
 
     def do_add_episode(self, *_):
         season_id = self.app.get_selected_season_id()
         if not season_id:
             return
         dialogs.show_episode_dialog(self.app.ui, 'Create new Episode', season_id)
-        self.app.reload_for_season()
+        self.app.reload()
 
     def on_selected_episode_changed(self, *_):
-        self.app.reload_for_episode()
+        self.app.reload()
 
     def on_episode_double_click(self, *_):
-        self.app.reload_for_episode()
         self.app.ui.get_object('stats_notebook').set_current_page(1)

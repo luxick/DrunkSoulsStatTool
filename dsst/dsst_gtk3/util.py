@@ -10,6 +10,7 @@ DEFAULT_CONFIG = {
     'auto_connect': False,
     'sql_connections': [{
         'host': 'localhost',
+        'port': 3306,
         'db_name': 'dsst',
         'user': 'dsst',
         'password': 'dsst'}

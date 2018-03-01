@@ -30,11 +30,18 @@ class GtkUi:
         self.ui.get_object('main_window').show_all()
         db_config = config['sql_connections'][0]
         # Initialize the database
-        sql.db.init(db_config['db_name'], user=db_config['user'], password=db_config['password'])
+        sql.db.init(db_config['db_name'], host=db_config['host'], port=db_config['port'],
+                    user=db_config['user'], password=db_config['password'])
+        # Show database info in status bar
+        self.set_db_status_label(db_config)
         # Create database if not exists
         sql_func.create_tables()
 
         self.reload_base_data()
+
+    def set_db_status_label(self, db_conf: dict):
+        self.ui.get_object('connection_label').set_text(f'{db_conf["user"]}@{db_conf["host"]}')
+        self.ui.get_object('db_label').set_text(f'{db_conf["db_name"]}')
 
     def reload_base_data(self):
         """Reload function for all base data witch is not dependant on selected season or episode"""
@@ -115,7 +122,7 @@ class GtkUi:
             store.append([victory.id, victory.player.name, victory.enemy.name, victory.info])
 
         # Stat grid
-        self.ui.get_object('ep_stat_title').set_text('Stats for episode {}\n"{}"'.format(episode.number, episode.name))
+        self.ui.get_object('ep_stat_title').set_text('Stats for episode {}\n{}'.format(episode.number, episode.name))
         self.ui.get_object('ep_death_count_label').set_text(str(len(episode.deaths)))
         drink_count = sum(len(death.penalties) for death in episode.deaths)
         self.ui.get_object('ep_drinks_label').set_text(str(drink_count))

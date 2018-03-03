@@ -1,5 +1,5 @@
-from dsst_gtk3 import dialogs, gtk_ui
-from dsst_sql import sql
+import sql
+from dsst_gtk3 import dialogs
 
 
 class BaseDataHandlers:

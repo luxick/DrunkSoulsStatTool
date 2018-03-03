@@ -1,7 +1,7 @@
 """
 This module contains shorthand functions for common queries to ease access from the UI
 """
-from dsst_sql.sql import *
+from data_access.sql import *
 
 
 def get_episodes_for_season(season_id: int) -> list:

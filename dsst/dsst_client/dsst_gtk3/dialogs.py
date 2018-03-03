@@ -5,7 +5,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from datetime import datetime
-from dsst_sql import sql
+import sql
 from dsst_gtk3 import util
 
 

@@ -1,5 +1,6 @@
 from gi.repository import Gtk
-from dsst_gtk3 import dialogs, gtk_ui
+
+from dsst_gtk3 import dialogs
 
 
 class VictoryHandlers:

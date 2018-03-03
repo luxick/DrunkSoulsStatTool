@@ -1,7 +1,8 @@
 from collections import Counter
+
 from gi.repository import Gtk
-from dsst_gtk3 import gtk_ui
-from dsst_sql import sql, sql_func
+
+from data_access import sql, sql_func
 from dsst_gtk3 import util
 
 
@@ -114,3 +115,9 @@ def reload_episode_stats(builder: Gtk.Builder, app: 'gtk_ui.GtkUi', episode_id: 
     if sorted_list:
         enemy_name, deaths = sorted_list[0]
         builder.get_object('ep_enemy_name_label').set_text(f'{enemy_name} ({deaths} Deaths)')
+
+
+def fill_list_store(store: Gtk.ListStore, models: list):
+    store.clear()
+    for model in models:
+        pass

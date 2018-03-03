@@ -1,10 +1,13 @@
-import gi
 import os
+
+import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from dsst_gtk3.handlers import handlers
 from dsst_gtk3 import util, reload
-from dsst_sql import sql, sql_func
+import sql_func
+import sql
 
 
 class GtkUi:

@@ -26,3 +26,7 @@ def recvall(sock, n):
             return None
         data += packet
     return data
+
+
+def list_class_methods(class_obj):
+    return [name for name in dir(class_obj) if not name.startswith('__')]

@@ -29,7 +29,6 @@ class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers, 
         """ Signal will be sent when app should close
         :param _: Arguments to the delete event
         """
-        sql.db.close()
         Gtk.main_quit()
 
     # DEBUG Functions ##################################################################################################

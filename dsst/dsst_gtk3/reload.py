@@ -3,21 +3,21 @@ from collections import Counter
 from gi.repository import Gtk
 
 from data_access import sql, sql_func
-from dsst_gtk3 import util
+from dsst_gtk3 import util, gtk_ui
 
 
-def reload_base_data(builder: Gtk.Builder, app: 'gtk_ui.GtkUi'):
+def reload_base_data(builder: Gtk.Builder, app: 'gtk_ui.GtkUi',):
     """Reload function for all base data witch is not dependant on a selected season or episode
     :param app: GtkUi instance
     :param builder: Gtk.Builder with loaded UI
     """
     # Rebuild all players store
     builder.get_object('all_players_store').clear()
-    for player in sql.Player.select():
+    for player in app.data['players']:
         builder.get_object('all_players_store').append([player.id, player.name, player.hex_id])
     # Rebuild drink store
         builder.get_object('drink_store').clear()
-    for drink in sql.Drink.select():
+    for drink in app.data['drinks']:
         builder.get_object('drink_store').append([drink.id, drink.name, '{:.2f}%'.format(drink.vol)])
     # Rebuild seasons store
     combo = builder.get_object('season_combo_box')  # type: Gtk.ComboBox
@@ -25,23 +25,22 @@ def reload_base_data(builder: Gtk.Builder, app: 'gtk_ui.GtkUi'):
     with util.block_handler(combo, app.handlers.do_season_selected):
         store = builder.get_object('seasons_store')
         store.clear()
-        for season in sql.Season.select().order_by(sql.Season.number):
+        for season in app.data['seasons']:
             store.append([season.id, season.game_name])
         combo.set_active(active)
 
 
-def reload_episodes(builder: Gtk.Builder, app: 'gtk_ui.GtkUi', season_id: int):
+def reload_episodes(builder: Gtk.Builder, app: 'gtk_ui.GtkUi'):
     """Reload all data that is dependant on a selected season
     :param app: GtkUi instance
     :param builder: Gtk.Builder with loaded UI
-    :param season_id: ID of the season for witch to load data
     """
     # Rebuild episodes store
     selection = builder.get_object('episodes_tree_view').get_selection()
     with util.block_handler(selection, app.handlers.on_selected_episode_changed):
         model, selected_paths = selection.get_selected_rows()
         model.clear()
-        for episode in sql_func.get_episodes_for_season(season_id):
+        for episode in app.data['episodes']:
             model.append([episode.id, episode.name, str(episode.date), episode.number])
         if selected_paths:
             selection.select_path(selected_paths[0])

@@ -5,18 +5,17 @@ import json
 import os
 from contextlib import contextmanager
 from gi.repository import Gtk
-from typing import Callable
+from typing import Callable, Type
 from zipfile import ZipFile
 
 CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.config', 'dsst', 'config.json')
 DEFAULT_CONFIG = {
     'auto_connect': False,
-    'sql_connections': [{
+    'servers': [{
         'host': 'localhost',
-        'port': 3306,
-        'db_name': 'dsst',
-        'user': 'dsst',
-        'password': 'dsst'}
+        'port': 12345,
+        'buffer_size': 1024,
+        'auth_token': 'a'}
     ]
 }
 
@@ -30,6 +29,17 @@ def block_handler(widget: 'Gtk.Widget', handler_func: Callable):
     widget.handler_block_by_func(handler_func)
     yield
     widget.handler_unblock_by_func(handler_func)
+
+
+@contextmanager
+def handle_exception(exception: 'Type[Exception]'):
+    """Run operation in try/except block and display exception in a dialog
+    :param exception:
+    """
+    try:
+        yield
+    except exception as e:
+        print(e)
 
 
 def get_combo_value(combo, index: int):

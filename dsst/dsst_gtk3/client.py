@@ -8,31 +8,31 @@ except ImportError:
 
 
 class Access:
-    def __init__(self, connection):
-        self.host = connection.get('host')
-        self.port = connection.get('port')
-        self.buffer = connection.get('buffer_size')
-        self.auth_key = connection.get('auth_key')
-        self.socket = socket.socket()
+    def __init__(self, conn_dict):
+        self.host = conn_dict.get('host')
+        self.port = conn_dict.get('port')
+        self.buffer = conn_dict.get('buffer_size')
+        self.auth_token = conn_dict.get('auth_token')
 
     def send_request(self, action: str, *args):
-        request = {'auth_key': self.auth_key,
+        request = {'auth_token': self.auth_token,
                    'action': action,
                    'args': args}
         request = pickle.dumps(request)
+        soc = socket.socket()
         try:
-            self.socket.connect((self.host, self.port))
-            util.send_msg(self.socket, request)
-            response = util.recv_msg(self.socket)
-            response = pickle.loads(response)
-            if not response.get('success'):
-                raise Exception(response.get('message'))
+            soc.connect((self.host, self.port))
+            util.send_msg(soc, request)
+            message = util.recv_msg(soc)
+            message = pickle.loads(message)
+            if not message.get('success'):
+                raise Exception(message.get('message'))
         finally:
-            self.socket.close()
-        return response.get('data')
+            soc.close()
+        return message.get('data')
 
 if __name__ == '__main__':
-    access = Access({'host': 'europa', 'port': 12345, 'buffer_size': 1024, 'auth_key': 'a'})
+    access = Access({'host': 'europa', 'port': 12345, 'buffer_size': 1024, 'auth_token': 'a'})
     action = 'load_seasons'
     response = access.send_request(action)
     pp = pprint.PrettyPrinter(indent=1)

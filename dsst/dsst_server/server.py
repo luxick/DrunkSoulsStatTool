@@ -6,7 +6,7 @@ import sys
 import os
 
 from common import util, models
-from dsst_server import read_functions, write_functions
+from dsst_server import read_functions, write_functions, tokens
 from dsst_server.func_proxy import FunctionProxy
 from dsst_server.data_access import sql
 
@@ -23,12 +23,19 @@ class DsstServer:
         self.socket_server.bind((HOST, PORT))
         print(f'Bound socket to {PORT} on host {HOST}')
 
-        self.read_actions = util.list_class_methods(read_functions.ReadFunctions)
-        self.write_actions = util.list_class_methods(write_functions.WriteFunctions)
+        # Initialize database
         sql.db.init('dsst', user='dsst', password='dsst')
+        print(f'Database initialized ({sql.db.database})')
 
-        self.key_access = {'a': self.read_actions,
-                           'b': self.read_actions + self.write_actions}
+        # Load access tokens and map them to their allowed methods
+        read_actions = util.list_class_methods(read_functions.ReadFunctions)
+        write_actions = util.list_class_methods(write_functions.WriteFunctions)
+        parm_access = {
+            'r': read_actions,
+            'rw': read_actions + write_actions
+        }
+        self.tokens = {token: parm_access[perms] for token, perms in tokens.TOKENS}
+        print(f'Loaded auth tokens: {self.tokens.keys()}')
 
     def run(self):
         self.socket_server.listen(5)
@@ -41,17 +48,22 @@ class DsstServer:
                 data = util.recv_msg(client)
                 request = pickle.loads(data)
                 print(f'Request: {request}')
-                # Validate auth key in request
-                key = request.get('auth_key')
-                if key not in self.key_access:
-                    util.send_msg(client, pickle.dumps({'success': False, 'message': 'Auth Key invalid'}))
-                    print(f'Rejected request from {address}. Auth key invalid ({key})')
+                # Validate auth token in request
+                token = request.get('auth_token')
+                if token not in self.tokens:
+                    util.send_msg(client, pickle.dumps({'success': False, 'message': 'Auth token invalid'}))
+                    print(f'Rejected request from {address}. Auth token invalid ({token})')
                     continue
                 # Check read functions
                 action_name = request.get('action')
-                if action_name in self.key_access[key]:
+                if action_name in self.tokens[token]:
                     action = getattr(FunctionProxy, action_name)
-                    value = action(request.get('args'))
+                    try:
+                        value = action(request.get('args'))
+                    except Exception as e:
+                        response = {'success': False, 'message': f'Exception was thrown on server.\n{e}'}
+                        util.send_msg(client, pickle.dumps(response))
+                        raise
                     response = {'success': True, 'data': value}
                     util.send_msg(client, pickle.dumps(response))
                     continue

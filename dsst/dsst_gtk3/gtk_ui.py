@@ -1,7 +1,7 @@
 import os
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 from dsst_gtk3.handlers import handlers
 from dsst_gtk3 import util, reload, client
 
@@ -17,6 +17,10 @@ class GtkUi:
         ]
         for path in glade_resources:
             self.ui.add_from_string(util.load_ui_resource_string(path))
+        # Set the status bar logo
+        dd_logo = ['dsst_gtk3', 'resources', 'images', 'dd.png']
+        logo_pixbuf = util.load_image_resource(dd_logo, 60, 13)
+        logo = self.ui.get_object('status_bar_logo').set_from_pixbuf(logo_pixbuf)
         # Connect signal handlers to UI
         self.handlers = handlers.Handlers(self)
         self.ui.connect_signals(self.handlers)

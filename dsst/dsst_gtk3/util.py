@@ -4,7 +4,7 @@ This modules contains general utilities for the GTK application to use.
 import json
 import os
 from contextlib import contextmanager
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 from typing import Callable
 from dsst_gtk3 import gtk_ui
 from zipfile import ZipFile
@@ -75,7 +75,7 @@ def get_index_of_combo_model(widget, column: int, value: int):
 def load_ui_resource_from_file(resource_path: list) -> str:
     project_base_dir = os.path.dirname(os.path.dirname(__file__))
     full_path = os.path.join(project_base_dir, *resource_path)
-    with open(full_path, 'r') as file:
+    with open(full_path, 'r', encoding='utf8') as file:
         return file.read()
 
 
@@ -93,8 +93,33 @@ def load_ui_resource_string(resource_path: list) -> str:
     if os.path.isdir(os.path.dirname(__file__)):
         return load_ui_resource_from_file(resource_path)
     else:
-
         return load_ui_resource_from_archive(resource_path)
+
+
+def load_image_resource_file(resource_path: list, width: int, height: int) -> GdkPixbuf:
+    project_base_dir = os.path.dirname(os.path.dirname(__file__))
+    full_path = os.path.join(project_base_dir, *resource_path)
+    return GdkPixbuf.Pixbuf.new_from_file_at_scale(full_path, width=width, height=height, preserve_aspect_ratio=False)
+
+
+def load_image_resource_archive(resource_path: list, width: int, height: int) -> GdkPixbuf:
+    resource_path = os.path.join(*resource_path)
+    zip_path = os.path.dirname(os.path.dirname(__file__))
+    with ZipFile(zip_path, 'r') as archive:
+        with archive.open(resource_path) as data:
+            loader = GdkPixbuf.PixbufLoader()
+            loader.write(data.read())
+            pixbuf = loader.get_pixbuf()    # type: GdkPixbuf.Pixbuf
+            pixbuf = pixbuf.scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
+            loader.close()
+            return pixbuf
+
+
+def load_image_resource(resource_path: list, width: int, height: int) -> GdkPixbuf:
+    if os.path.isdir(os.path.dirname(__file__)):
+        return load_image_resource_file(resource_path, width, height)
+    else:
+        return load_image_resource_archive(resource_path, width, height)
 
 
 def load_config(config_path: str) -> dict:

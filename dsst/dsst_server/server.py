@@ -7,7 +7,7 @@ import sys
 import os
 
 from common import util, models
-from dsst_server import read_functions, write_functions, tokens
+from dsst_server import func_read, func_write, tokens
 from dsst_server.func_proxy import FunctionProxy
 from dsst_server.data_access import sql, sql_func
 
@@ -31,8 +31,8 @@ class DsstServer:
         print('Database initialized ({})'.format(sql.db.database))
 
         # Load access tokens and map them to their allowed methods
-        read_actions = util.list_class_methods(read_functions.ReadFunctions)
-        write_actions = util.list_class_methods(write_functions.WriteFunctions)
+        read_actions = util.list_class_methods(func_read.ReadFunctions)
+        write_actions = util.list_class_methods(func_write.WriteFunctions)
         parm_access = {
             'r': read_actions,
             'rw': read_actions + write_actions

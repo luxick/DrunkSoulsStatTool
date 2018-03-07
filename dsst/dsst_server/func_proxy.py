@@ -1,5 +1,5 @@
-from dsst_server.write_functions import WriteFunctions
-from dsst_server.read_functions import ReadFunctions
+from dsst_server.func_write import WriteFunctions
+from dsst_server.func_read import ReadFunctions
 
 
 class FunctionProxy(WriteFunctions, ReadFunctions):

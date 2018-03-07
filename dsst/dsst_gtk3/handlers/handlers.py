@@ -6,8 +6,6 @@ from dsst_gtk3.handlers.base_data_handlers import BaseDataHandlers
 from dsst_gtk3.handlers.dialog_handlers import DialogHandlers
 from dsst_gtk3.handlers.death_handlers import DeathHandlers
 from dsst_gtk3.handlers.victory_handlers import VictoryHandlers
-import sql_func
-import sql
 
 
 class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers, VictoryHandlers):
@@ -35,5 +33,4 @@ class Handlers(SeasonHandlers, BaseDataHandlers, DialogHandlers, DeathHandlers, 
 
     @staticmethod
     def do_delete_database(*_):
-        sql_func.drop_tables()
-        sql_func.create_tables()
+        pass

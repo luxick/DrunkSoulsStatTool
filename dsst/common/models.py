@@ -45,7 +45,7 @@ class Enemy:
     def __init__(self, arg={}):
         self.id = arg.get('id')
         self.name = arg.get('name')
-        self.optional = arg.get('optional')
+        self.boss = arg.get('boss')
         self.season = arg.get('season')
 
 
@@ -75,3 +75,9 @@ class Victory:
         self.player = arg.get('player')
         self.enemy = arg.get('enemy')
         self.episode = arg.get('episode')
+
+
+class SeasonStats:
+    def __init__(self, arg={}):
+        self.player_kd = arg.get('player_kd')
+        self.enemies = arg.get('enemies')

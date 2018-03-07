@@ -1,4 +1,3 @@
-import sql
 from dsst_gtk3 import dialogs
 
 
@@ -12,7 +11,7 @@ class BaseDataHandlers:
 
     def do_add_player(self, entry):
         if entry.get_text():
-            sql.Player.create(name=entry.get_text())
+            # sql.Player.create(name=entry.get_text())
             entry.set_text('')
             self.app.reload()
 
@@ -21,16 +20,16 @@ class BaseDataHandlers:
 
     def on_player_name_edited(self, _, index, value):
         row = self.app.ui.get_object('all_players_store')[index]
-        sql.Player.update(name=value)\
-                  .where(sql.Player.id == row[0])\
-                  .execute()
+        # sql.Player.update(name=value)\
+        #           .where(sql.Player.id == row[0])\
+        #           .execute()
         self.app.reload()
 
     def on_player_hex_edited(self, _, index, value):
         row = self.app.ui.get_object('all_players_store')[index]
-        sql.Player.update(hex_id=value)\
-                  .where(sql.Player.id == row[0])\
-                  .execute()
+        # sql.Player.update(hex_id=value)\
+        #           .where(sql.Player.id == row[0])\
+        #           .execute()
         self.app.reload()
 
     def do_add_drink(self, entry):
@@ -41,14 +40,14 @@ class BaseDataHandlers:
 
     def on_drink_name_edited(self, _, index, value):
         row = self.app.ui.get_object('drink_store')[index]
-        sql.Drink.update(name=value)\
-                 .where(sql.Drink.id == row[0])\
-                 .execute()
+        # sql.Drink.update(name=value)\
+        #          .where(sql.Drink.id == row[0])\
+        #          .execute()
         self.app.reload()
 
     def on_drink_vol_edited(self, _, index, value):
         row = self.app.ui.get_object('drink_store')[index]
-        sql.Drink.update(vol=value) \
-                 .where(sql.Drink.id == row[0]) \
-                 .execute()
+        # sql.Drink.update(vol=value) \
+        #          .where(sql.Drink.id == row[0]) \
+        #          .execute()
         self.app.reload()

@@ -1,5 +1,4 @@
 from gi.repository import Gtk
-
 from dsst_gtk3 import dialogs
 
 

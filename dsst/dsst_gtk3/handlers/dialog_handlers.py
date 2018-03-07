@@ -1,4 +1,3 @@
-import sql
 from dsst_gtk3 import dialogs, util
 
 
@@ -14,16 +13,16 @@ class DialogHandlers:
         player_id = util.get_combo_value(combo, 0)
         if player_id:
             self.app.ui.get_object('add_player_combo_box').set_active(-1)
-            player = sql.Player.get(sql.Player.id == player_id)
+            # player = sql.Player.get(sql.Player.id == player_id)
             store = self.app.ui.get_object('episode_players_store')
-            if not any(row[0] == player_id for row in store):
-                store.append([player_id, player.name, player.hex_id])
+            # if not any(row[0] == player_id for row in store):
+            #     store.append([player_id, player.name, player.hex_id])
 
     def do_add_enemy(self, entry):
         if entry.get_text():
             store = self.app.ui.get_object('enemy_season_store')
-            enemy = sql.Enemy.create(name=entry.get_text(), season=self.app.get_selected_season_id())
-            store.append([enemy.name, False, 0, enemy.id])
+            # enemy = sql.Enemy.create(name=entry.get_text(), season=self.app.get_selected_season_id())
+            # store.append([enemy.name, False, 0, enemy.id])
             entry.set_text('')
 
     def do_manage_drinks(self, *_):

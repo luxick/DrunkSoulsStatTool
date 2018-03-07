@@ -5,7 +5,8 @@ import json
 import os
 from contextlib import contextmanager
 from gi.repository import Gtk
-from typing import Callable, Type
+from typing import Callable
+from dsst_gtk3 import gtk_ui
 from zipfile import ZipFile
 
 CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.config', 'dsst', 'config.json')
@@ -32,14 +33,19 @@ def block_handler(widget: 'Gtk.Widget', handler_func: Callable):
 
 
 @contextmanager
-def handle_exception(exception: 'Type[Exception]'):
+def network_operation(app: 'gtk_ui.GtkUi'):
     """Run operation in try/except block and display exception in a dialog
     :param exception:
     """
+    app.ui.get_object('status_bar').push(0, 'Connecting to server')
     try:
         yield
-    except exception as e:
+    except Exception as e:
         print(e)
+        app.ui.get_object('status_bar').push(0, str(e))
+    else:
+        app.ui.get_object('status_bar').push(0, '')
+
 
 
 def get_combo_value(combo, index: int):

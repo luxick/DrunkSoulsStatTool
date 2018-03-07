@@ -3,10 +3,21 @@ from common import models
 
 
 def map_base_fields(cls, db_model):
+    """Automatically map fields of db models to common models
+    :param cls: common.models class to create
+    :param db_model: database model from which to map
+    :return: An common.models object
+    """
     model = cls()
     attrs = [attr for attr in db_model._meta.fields]
     for attr in attrs:
-        setattr(model, attr, getattr(db_model, attr))
+        db_attr = getattr(db_model, attr)
+        # Check if the attribute is an relation to another db model
+        # In that case just take its id
+        if hasattr(db_attr, 'id'):
+            setattr(model, attr, getattr(db_attr, 'id'))
+        else:
+            setattr(model, attr, getattr(db_model, attr))
     return model
 
 

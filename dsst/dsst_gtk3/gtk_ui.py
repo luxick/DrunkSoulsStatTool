@@ -1,13 +1,9 @@
 import os
-
 import gi
-
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from dsst_gtk3.handlers import handlers
 from dsst_gtk3 import util, reload, client
-import sql_func
-import sql
 
 
 class GtkUi:
@@ -30,41 +26,37 @@ class GtkUi:
         config = config['servers'][0]
         self.data_client = client.Access(config)
         self.data = {}
+        self.meta = {'connection': '{}:{}'.format(config.get('host'), config.get('port'))}
+        self.season_changed = True
+        self.ep_changed = False
         # Load base data and seasons
         self.initial_load()
+        self.update_status_bar_meta()
 
     def initial_load(self):
-        with util.handle_exception(Exception):
+        with util.network_operation(self):
             self.data['players'] = self.data_client.send_request('load_players')
             self.data['drinks'] = self.data_client.send_request('load_drinks')
             self.data['seasons'] = self.data_client.send_request('load_seasons')
-        reload.reload_base_data(self.ui, self)
+            self.meta['database'] = self.data_client.send_request('load_db_meta')
+            reload.reload_base_data(self.ui, self)
 
     def reload(self):
-        with util.handle_exception(Exception):
-            self.data['episodes'] = self.data_client.send_request('load_episodes', self.get_selected_season_id())
-        reload.reload_episodes(self.ui, self)
-        pass
-        # reload.reload_base_data(self.ui, self)
-        # season_id = self.get_selected_season_id()
-        # if season_id:
-        #     reload.reload_episodes(self.ui, self, season_id)
-        #     reload.reload_season_stats(self.ui, self, season_id)
-        # else:
-        #     return
-        # episode_id = self.get_selected_episode_id()
-        # if episode_id:
-        #     reload.reload_episode_stats(self.ui, self, episode_id)
+        if self.season_changed:
+            with util.network_operation(self):
+                season_id = self.get_selected_season_id()
+                self.data['episodes'] = self.data_client.send_request('load_episodes', season_id)
+                self.data['season_stats'] = self.data_client.send_request('load_season_stats', season_id)
+                reload.reload_episodes(self.ui, self)
+                reload.reload_season_stats(self)
+            self.season_changed = False
 
-    def load(self, data_dict: dict, value_field: str, request_name: str):
-        try:
-            data_dict[value_field] = self.data_client.send_request('request_name')
-        except Exception as e:
-            print()
+        if self.ep_changed:
+            reload.reload_episode_stats(self)
 
-    def set_db_status_label(self, db_conf: dict):
-        self.ui.get_object('connection_label').set_text(f'{db_conf["user"]}@{db_conf["host"]}')
-        self.ui.get_object('db_label').set_text(f'{db_conf["db_name"]}')
+    def update_status_bar_meta(self):
+        self.ui.get_object('connection_label').set_text(self.meta.get('connection'))
+        self.ui.get_object('db_label').set_text(self.meta.get('database') or '')
 
     def get_selected_season_id(self) -> int:
         """Read ID of the selected season from the UI
@@ -87,3 +79,7 @@ def main():
     config = util.load_config(util.CONFIG_PATH)
     GtkUi(config)
     Gtk.main()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,12 +1,7 @@
 """
 This module contains UI functions for displaying different dialogs
 """
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from datetime import datetime
-import sql
-from dsst_gtk3 import util
 
 
 def enter_string_dialog(builder: Gtk.Builder, title: str, value=None) -> str:
@@ -33,7 +28,7 @@ def enter_string_dialog(builder: Gtk.Builder, title: str, value=None) -> str:
         return value
 
 
-def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episode: sql.Episode=None):
+def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episode):
     """ Shows a dialog to edit an episode
     :param builder: GtkBuilder with loaded 'dialogs.glade'
     :param title: Title of the dialog window
@@ -41,44 +36,45 @@ def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episod
     :param episode: (Optional) Existing episode to edit
     :return True if changes where saved False if discarded
     """
-    # Set up the dialog
-    dialog = builder.get_object("edit_episode_dialog")  # type: Gtk.Dialog
-    dialog.set_transient_for(builder.get_object("main_window"))
-    dialog.set_title(title)
-    with sql.db.atomic():
-        if not episode:
-            nxt_number = len(sql.Season.get_by_id(season_id).episodes) + 1
-            episode = sql.Episode.create(seq_number=nxt_number, number=nxt_number, date=datetime.today(),
-                                         season=season_id)
-        # Set episode number
-        builder.get_object("episode_no_spin_button").set_value(episode.number)
-        # Set episode date
-        builder.get_object('episode_calendar').select_month(episode.date.month, episode.date.year)
-        builder.get_object('episode_calendar').select_day(episode.date.day)
-        # Set participants for the episode
-        builder.get_object('episode_players_store').clear()
-        for player in episode.players:
-            builder.get_object('episode_players_store').append([player.id, player.name, player.hex_id])
-
-        result = dialog.run()
-        dialog.hide()
-
-        if result != Gtk.ResponseType.OK:
-            sql.db.rollback()
-            return False
-
-        # Save all changes to Database
-        player_ids = [row[0] for row in builder.get_object('episode_players_store')]
-        # Insert new Players
-        episode.players = sql.Player.select().where(sql.Player.id << player_ids)
-        # Update Date of the Episode
-        cal_value = builder.get_object('episode_calendar').get_date()
-        selected_date = datetime(*cal_value).date()
-        episode.date = selected_date,
-        episode.number = int(builder.get_object("episode_no_spin_button").get_value())
-        episode.name = builder.get_object("episode_name_entry").get_text()
-        episode.save()
-        return True
+    pass
+    # # Set up the dialog
+    # dialog = builder.get_object("edit_episode_dialog")  # type: Gtk.Dialog
+    # dialog.set_transient_for(builder.get_object("main_window"))
+    # dialog.set_title(title)
+    # with sql.db.atomic():
+    #     if not episode:
+    #         nxt_number = len(sql.Season.get_by_id(season_id).episodes) + 1
+    #         episode = sql.Episode.create(seq_number=nxt_number, number=nxt_number, date=datetime.today(),
+    #                                      season=season_id)
+    #     # Set episode number
+    #     builder.get_object("episode_no_spin_button").set_value(episode.number)
+    #     # Set episode date
+    #     builder.get_object('episode_calendar').select_month(episode.date.month, episode.date.year)
+    #     builder.get_object('episode_calendar').select_day(episode.date.day)
+    #     # Set participants for the episode
+    #     builder.get_object('episode_players_store').clear()
+    #     for player in episode.players:
+    #         builder.get_object('episode_players_store').append([player.id, player.name, player.hex_id])
+    #
+    #     result = dialog.run()
+    #     dialog.hide()
+    #
+    #     if result != Gtk.ResponseType.OK:
+    #         sql.db.rollback()
+    #         return False
+    #
+    #     # Save all changes to Database
+    #     player_ids = [row[0] for row in builder.get_object('episode_players_store')]
+    #     # Insert new Players
+    #     episode.players = sql.Player.select().where(sql.Player.id << player_ids)
+    #     # Update Date of the Episode
+    #     cal_value = builder.get_object('episode_calendar').get_date()
+    #     selected_date = datetime(*cal_value).date()
+    #     episode.date = selected_date,
+    #     episode.number = int(builder.get_object("episode_no_spin_button").get_value())
+    #     episode.name = builder.get_object("episode_name_entry").get_text()
+    #     episode.save()
+    #     return True
 
 
 def show_manage_players_dialog(builder: Gtk.Builder, title: str):
@@ -106,86 +102,88 @@ def show_manage_drinks_dialog(builder: Gtk.Builder):
     dialog.hide()
 
 
-def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death: sql.Death=None):
-    """Show a dialog for editing or creating death events.
-    :param builder: A Gtk.Builder object
-    :param episode_id: ID to witch the death event belongs to
-    :param death: (Optional) Death event witch should be edited
-    :return: Gtk.ResponseType of the dialog
-    """
-    dialog = builder.get_object("edit_death_dialog")  # type: Gtk.Dialog
-    dialog.set_transient_for(builder.get_object("main_window"))
-    with sql.db.atomic():
-        if death:
-            index = util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
-            builder.get_object('edit_death_enemy_combo').set_active(index)
+def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death):
+    pass
+    # """Show a dialog for editing or creating death events.
+    # :param builder: A Gtk.Builder object
+    # :param episode_id: ID to witch the death event belongs to
+    # :param death: (Optional) Death event witch should be edited
+    # :return: Gtk.ResponseType of the dialog
+    # """
+    # dialog = builder.get_object("edit_death_dialog")  # type: Gtk.Dialog
+    # dialog.set_transient_for(builder.get_object("main_window"))
+    # with sql.db.atomic():
+    #     if death:
+    #         index = util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
+    #         builder.get_object('edit_death_enemy_combo').set_active(index)
+    #
+    #     # TODO Default drink should be set in config
+    #     default_drink = sql.Drink.get().name
+    #     store = builder.get_object('player_penalties_store')
+    #     store.clear()
+    #     for player in builder.get_object('episode_players_store'):
+    #         store.append([None, player[1], default_drink, player[0]])
+    #
+    #     # Run the dialog
+    #     result = dialog.run()
+    #     dialog.hide()
+    #     if result != Gtk.ResponseType.OK:
+    #         sql.db.rollback()
+    #         return result
+    #
+    #     # Collect info from widgets and save to database
+    #     player_id = util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
+    #     enemy_id = util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
+    #     comment = builder.get_object('edit_death_comment_entry').get_text()
+    #     if not death:
+    #         death = sql.Death.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
+    #
+    #     store = builder.get_object('player_penalties_store')
+    #     size = builder.get_object('edit_death_size_spin').get_value()
+    #     for entry in store:
+    #         drink_id = sql.Drink.get(sql.Drink.name == entry[2])
+    #         sql.Penalty.create(size=size, player=entry[3], death=death.id, drink=drink_id)
+    #
+    #     return result
 
-        # TODO Default drink should be set in config
-        default_drink = sql.Drink.get().name
-        store = builder.get_object('player_penalties_store')
-        store.clear()
-        for player in builder.get_object('episode_players_store'):
-            store.append([None, player[1], default_drink, player[0]])
 
-        # Run the dialog
-        result = dialog.run()
-        dialog.hide()
-        if result != Gtk.ResponseType.OK:
-            sql.db.rollback()
-            return result
-
-        # Collect info from widgets and save to database
-        player_id = util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
-        enemy_id = util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
-        comment = builder.get_object('edit_death_comment_entry').get_text()
-        if not death:
-            death = sql.Death.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
-
-        store = builder.get_object('player_penalties_store')
-        size = builder.get_object('edit_death_size_spin').get_value()
-        for entry in store:
-            drink_id = sql.Drink.get(sql.Drink.name == entry[2])
-            sql.Penalty.create(size=size, player=entry[3], death=death.id, drink=drink_id)
-
-        return result
-
-
-def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory: sql.Victory=None):
-    """Show a dialog for editing or creating victory events.
-    :param builder: A Gtk.Builder object
-    :param episode_id: ID to witch the victory event belongs to
-    :param victory: (Optional) Victory event witch should be edited
-    :return: Gtk.ResponseType of the dialog
-    """
-    dialog = builder.get_object("edit_victory_dialog")  # type: Gtk.Dialog
-    dialog.set_transient_for(builder.get_object("main_window"))
-    with sql.db.atomic():
-        if victory:
-            infos = [['edit_victory_player_combo', victory.player.id],
-                     ['edit_victory_enemy_combo', victory.enemy.id]]
-            for info in infos:
-                combo = builder.get_object(info[0])
-                index = util.get_index_of_combo_model(combo, 0, info[1])
-                combo.set_active(index)
-            builder.get_object('victory_comment_entry').set_text(victory.info)
-
-        # Run the dialog
-        result = dialog.run()
-        dialog.hide()
-        if result != Gtk.ResponseType.OK:
-            sql.db.rollback()
-            return result
-
-        # Collect info from widgets and save to database
-        player_id = util.get_combo_value(builder.get_object('edit_victory_player_combo'), 0)
-        enemy_id = util.get_combo_value(builder.get_object('edit_victory_enemy_combo'), 3)
-        comment = builder.get_object('victory_comment_entry').get_text()
-        if not victory:
-            sql.Victory.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
-        else:
-            victory.player = player_id
-            victory.enemy = enemy_id
-            victory.info = comment
-            victory.save()
-
-        return result
+def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory):
+    pass
+    # """Show a dialog for editing or creating victory events.
+    # :param builder: A Gtk.Builder object
+    # :param episode_id: ID to witch the victory event belongs to
+    # :param victory: (Optional) Victory event witch should be edited
+    # :return: Gtk.ResponseType of the dialog
+    # """
+    # dialog = builder.get_object("edit_victory_dialog")  # type: Gtk.Dialog
+    # dialog.set_transient_for(builder.get_object("main_window"))
+    # with sql.db.atomic():
+    #     if victory:
+    #         infos = [['edit_victory_player_combo', victory.player.id],
+    #                  ['edit_victory_enemy_combo', victory.enemy.id]]
+    #         for info in infos:
+    #             combo = builder.get_object(info[0])
+    #             index = util.get_index_of_combo_model(combo, 0, info[1])
+    #             combo.set_active(index)
+    #         builder.get_object('victory_comment_entry').set_text(victory.info)
+    #
+    #     # Run the dialog
+    #     result = dialog.run()
+    #     dialog.hide()
+    #     if result != Gtk.ResponseType.OK:
+    #         sql.db.rollback()
+    #         return result
+    #
+    #     # Collect info from widgets and save to database
+    #     player_id = util.get_combo_value(builder.get_object('edit_victory_player_combo'), 0)
+    #     enemy_id = util.get_combo_value(builder.get_object('edit_victory_enemy_combo'), 3)
+    #     comment = builder.get_object('victory_comment_entry').get_text()
+    #     if not victory:
+    #         sql.Victory.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
+    #     else:
+    #         victory.player = player_id
+    #         victory.enemy = enemy_id
+    #         victory.info = comment
+    #         victory.save()
+    #
+    #     return result

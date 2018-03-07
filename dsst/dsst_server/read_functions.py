@@ -4,6 +4,9 @@ from playhouse import shortcuts
 
 
 class ReadFunctions:
+    @staticmethod
+    def load_db_meta(*_):
+        return sql.db.database
 
     @staticmethod
     def load_seasons(*_):
@@ -26,3 +29,19 @@ class ReadFunctions:
     @staticmethod
     def load_drinks(*_):
         return [mapping.db_to_drink(drink) for drink in sql.Drink.select()]
+
+    @staticmethod
+    def load_season_stats(season_id, *_):
+        season = sql.Season.get(sql.Season.id == season_id)
+        players = sql_func.players_for_season(season_id)
+        model = models.SeasonStats()
+        model.player_kd = [(player.name,
+                            sql_func.get_player_victories_for_season(season_id, player.id),
+                            sql_func.get_player_deaths_for_season(season_id, player.id))
+                           for player in players]
+        model.enemies = [(enemy.name,
+                          sql_func.enemy_attempts(enemy.id),
+                          sql.Victory.select().where(sql.Victory.enemy == enemy.id).exists(),
+                          enemy.boss)
+                         for enemy in season.enemies]
+        return model

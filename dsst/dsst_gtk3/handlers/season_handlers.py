@@ -1,5 +1,4 @@
-from data_access import sql
-from dsst_gtk3 import dialogs
+from dsst_gtk3 import dialogs, gtk_ui
 
 
 class SeasonHandlers:
@@ -10,10 +9,10 @@ class SeasonHandlers:
     def do_add_season(self, *_):
         name = dialogs.enter_string_dialog(self.app.ui, 'Name for the new Season')
         if name:
-            sql.Season.create(game_name=name, number=1)
             self.app.reload()
 
     def do_season_selected(self, *_):
+        self.app.season_changed = True
         self.app.reload()
 
     def do_add_episode(self, *_):
@@ -24,6 +23,7 @@ class SeasonHandlers:
         self.app.reload()
 
     def on_selected_episode_changed(self, *_):
+        self.app.ep_changed = True
         self.app.reload()
 
     def on_episode_double_click(self, *_):

@@ -1,10 +1,10 @@
 import os
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk
 from dsst_gtk3.handlers import handlers
 from dsst_gtk3 import util, reload, client
-
+from common import models
 
 class GtkUi:
     """ The main UI class """
@@ -29,34 +29,51 @@ class GtkUi:
         # Connect to data server
         config = config['servers'][0]
         self.data_client = client.Access(config)
-        self.data = {}
+        # Create local data caches
+        self.players = util.Cache()
+        self.drinks = util.Cache()
+        self.seasons = util.Cache()
+        self.episodes = util.Cache()
+        self.enemies = util.Cache()
+        self.season_stats = util.Cache()
+        # Create meta data cache
         self.meta = {'connection': '{}:{}'.format(config.get('host'), config.get('port'))}
-        self.season_changed = True
-        self.ep_changed = False
         # Load base data and seasons
-        self.initial_load()
+        self.load_server_meta()
+        self.reload()
         self.update_status_bar_meta()
 
-    def initial_load(self):
-        with util.network_operation(self):
-            self.data['players'] = self.data_client.send_request('load_players')
-            self.data['drinks'] = self.data_client.send_request('load_drinks')
-            self.data['seasons'] = self.data_client.send_request('load_seasons')
-            self.meta['database'] = self.data_client.send_request('load_db_meta')
-            reload.reload_base_data(self.ui, self)
+    def load_server_meta(self):
+        self.meta['database'] = self.data_client.send_request('load_db_meta')
 
     def reload(self):
-        if self.season_changed:
+        with util.network_operation(self):
+            refresh_base = False
+            if not self.players.valid:
+                self.players.data = self.data_client.send_request('load_players')
+                refresh_base = True
+            if not self.drinks.valid:
+                self.drinks.data = self.data_client.send_request('load_drinks')
+                refresh_base= True
+            if not self.seasons.valid:
+                self.seasons.data = self.data_client.send_request('load_seasons')
+                refresh_base = True
+            if refresh_base:
+                reload.reload_base_data(self.ui, self)
+
+        if not self.episodes.valid:
             with util.network_operation(self):
                 season_id = self.get_selected_season_id()
-                self.data['episodes'] = self.data_client.send_request('load_episodes', season_id)
-                self.data['season_stats'] = self.data_client.send_request('load_season_stats', season_id)
-                reload.reload_episodes(self.ui, self)
-                reload.reload_season_stats(self)
-            self.season_changed = False
+                if season_id:
+                    self.episodes.data = self.data_client.send_request('load_episodes', season_id)
+                    self.season_stats.data = self.data_client.send_request('load_season_stats', season_id)
+                    reload.reload_episodes(self.ui, self)
+                    reload.reload_season_stats(self)
 
-        if self.ep_changed:
-            reload.reload_episode_stats(self)
+    def update_season(self, season: 'models.Season'):
+        with util.network_operation(self):
+            self.data_client.send_request('update_season', season)
+            self.seasons.valid = False
 
     def update_status_bar_meta(self):
         self.ui.get_object('connection_label').set_text(self.meta.get('connection'))

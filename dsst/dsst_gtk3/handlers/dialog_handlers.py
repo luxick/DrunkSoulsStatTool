@@ -1,4 +1,7 @@
-from dsst_gtk3 import dialogs, util
+import datetime
+
+from dsst_gtk3 import dialogs, util, gtk_ui
+from gi.repository import Gtk
 
 
 class DialogHandlers:
@@ -27,3 +30,20 @@ class DialogHandlers:
 
     def do_manage_drinks(self, *_):
         result = dialogs.show_manage_drinks_dialog(self.app.ui)
+
+    def do_show_date_picker(self, entry: 'Gtk.Entry', *_):
+        dialog = self.app.ui.get_object('date_picker_dialog')
+        result = dialog.run()
+        dialog.hide()
+        if result == Gtk.ResponseType.OK:
+            date = self.app.ui.get_object('date_picker_calendar').get_date()
+            date_string = '{}-{:02d}-{:02d}'.format(date.year, date.month +1, date.day)
+            entry.set_text(date_string)
+
+    @staticmethod
+    def do_set_today(cal: 'Gtk.Calendar'):
+        """Set date of a Gtk Calendar to today
+        :param cal: Gtk.Calendar
+        """
+        cal.select_month = datetime.date.today().month
+        cal.select_day = datetime.date.today().day

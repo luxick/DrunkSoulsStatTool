@@ -16,9 +16,24 @@ DEFAULT_CONFIG = {
         'host': 'localhost',
         'port': 12345,
         'buffer_size': 1024,
-        'auth_token': 'a'}
+        'auth_token': ''}
     ]
 }
+
+
+class Cache:
+    def __init__(self, data={}, valid=False):
+        self._data = data
+        self.valid = valid
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+        self.valid = True
 
 
 @contextmanager
@@ -35,7 +50,7 @@ def block_handler(widget: 'Gtk.Widget', handler_func: Callable):
 @contextmanager
 def network_operation(app: 'gtk_ui.GtkUi'):
     """Run operation in try/except block and display exception in a dialog
-    :param exception:
+    :param app: Reference to main Gtk Application
     """
     app.ui.get_object('status_bar').push(0, 'Connecting to server')
     try:
@@ -45,7 +60,6 @@ def network_operation(app: 'gtk_ui.GtkUi'):
         app.ui.get_object('status_bar').push(0, str(e))
     else:
         app.ui.get_object('status_bar').push(0, '')
-
 
 
 def get_combo_value(combo, index: int):

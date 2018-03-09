@@ -62,7 +62,7 @@ class DsstServer:
                 if action_name in self.tokens[token]:
                     action = getattr(FunctionProxy, action_name)
                     try:
-                        value = action(request.get('args'))
+                        value = action(*request.get('args'))
                     except Exception as e:
                         response = {'success': False, 'message': 'Exception was thrown on server.\n{}'.format(e)}
                         util.send_msg(client, pickle.dumps(response))

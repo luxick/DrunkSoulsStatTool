@@ -10,11 +10,11 @@ def reload_base_data(builder: Gtk.Builder, app: 'gtk_ui.GtkUi',):
     """
     # Rebuild all players store
     builder.get_object('all_players_store').clear()
-    for player in app.data['players']:
+    for player in app.players.data:
         builder.get_object('all_players_store').append([player.id, player.name, player.hex_id])
     # Rebuild drink store
         builder.get_object('drink_store').clear()
-    for drink in app.data['drinks']:
+    for drink in app.drinks.data:
         builder.get_object('drink_store').append([drink.id, drink.name, '{:.2f}%'.format(drink.vol)])
     # Rebuild seasons store
     combo = builder.get_object('season_combo_box')  # type: Gtk.ComboBox
@@ -22,7 +22,7 @@ def reload_base_data(builder: Gtk.Builder, app: 'gtk_ui.GtkUi',):
     with util.block_handler(combo, app.handlers.do_season_selected):
         store = builder.get_object('seasons_store')
         store.clear()
-        for season in app.data['seasons']:
+        for season in app.seasons.data:
             store.append([season.id, season.game_name])
         combo.set_active(active)
 
@@ -37,7 +37,7 @@ def reload_episodes(builder: Gtk.Builder, app: 'gtk_ui.GtkUi'):
     with util.block_handler(selection, app.handlers.on_selected_episode_changed):
         model, selected_paths = selection.get_selected_rows()
         model.clear()
-        for episode in app.data['episodes']:
+        for episode in app.episodes.data:
             model.append([episode.id, episode.name, str(episode.date), episode.number])
         if selected_paths:
             selection.select_path(selected_paths[0])
@@ -47,7 +47,7 @@ def reload_season_stats(app: 'gtk_ui.GtkUi'):
     """Load statistic data for selected season
     :param app: GtkUi instance
     """
-    season_stats = app.data.get('season_stats')
+    season_stats = app.season_stats.data
     # Load player kill/death data
     store = app.ui.get_object('player_season_store')
     store.clear()
@@ -65,7 +65,7 @@ def reload_episode_stats(app: 'gtk_ui.GtkUi'):
     """Reload all data that is dependant on a selected episode
     :param app: app: GtkUi instance
     """
-    episode = [ep for ep in app.data['episodes'] if ep.id == app.get_selected_episode_id()][0]
+    episode = [ep for ep in app.episodes.data if ep.id == app.get_selected_episode_id()][0]
     store = app.ui.get_object('episode_players_store')
     store.clear()
     for player in episode.players:
@@ -75,7 +75,7 @@ def reload_episode_stats(app: 'gtk_ui.GtkUi'):
     store.clear()
     for death in episode.deaths:
         penalties = [x.drink.name for x in death.penalties]
-        penalties = [f'{number}x {drink}' for drink, number in Counter(penalties).items()]
+        penalties = ['{}x {}'.format(number, drink) for drink, number in Counter(penalties).items()]
         penalty_string = ', '.join(penalties)
         store.append([death.id, death.player.name, death.enemy.name, penalty_string])
     # Reload victory store for notebook view
@@ -100,7 +100,7 @@ def reload_episode_stats(app: 'gtk_ui.GtkUi'):
     sorted_list = Counter(enemy_list).most_common(1)
     if sorted_list:
         enemy_name, deaths = sorted_list[0]
-        app.ui.get_object('ep_enemy_name_label').set_text(f'{enemy_name} ({deaths} Deaths)')
+        app.ui.get_object('ep_enemy_name_label').set_text('{} ({} Deaths)'.format(enemy_name, deaths))
 
 
 def fill_list_store(store: Gtk.ListStore, models: list):

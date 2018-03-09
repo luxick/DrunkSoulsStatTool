@@ -1,7 +1,9 @@
 """
 This module contains UI functions for displaying different dialogs
 """
+import datetime
 from gi.repository import Gtk
+from common import models
 
 
 def enter_string_dialog(builder: Gtk.Builder, title: str, value=None) -> str:
@@ -26,6 +28,32 @@ def enter_string_dialog(builder: Gtk.Builder, title: str, value=None) -> str:
         return entry.get_text()
     else:
         return value
+
+
+def edit_season(builder: 'Gtk.Builder', season: 'models.Season'=None):
+    if not season:
+        season = models.Season()
+    builder.get_object('season_number_spin').set_value(season.number or 1)
+    builder.get_object('season_game_entry').set_text(season.game_name or '')
+    builder.get_object('season_start_entry').set_text(season.start_date or '')
+    builder.get_object('season_end_entry').set_text(season.end_date or '')
+
+    dialog = builder.get_object('edit_season_dialog')
+    result = dialog.run()
+    dialog.hide()
+
+    if result != Gtk.ResponseType.OK:
+        return None
+
+    season.number = builder.get_object('season_number_spin').get_value()
+    season.game_name = builder.get_object('season_game_entry').get_text()
+    start_string = builder.get_object('season_start_entry').get_text()
+    if start_string:
+        season.start_date = datetime.datetime.strptime(start_string, '%Y-%m-%d')
+    end_string = builder.get_object('season_end_entry').get_text()
+    if end_string:
+        season.end_date = datetime.datetime.strptime(end_string, '%Y-%m-%d')
+    return season
 
 
 def show_episode_dialog(builder: Gtk.Builder, title: str, season_id: int, episode):

@@ -9,6 +9,11 @@ class DialogHandlers:
     def __init__(self, app: 'gtk_ui.GtkUi'):
         self.app = app
 
+    @staticmethod
+    def do_run_manage_dialog(dialog: 'Gtk.Dialog'):
+        dialog.run()
+        dialog.hide()
+
     def do_add_player_to_episode(self, combo):
         """ Signal Handler for Add Player to Episode Button in Manage Episode Dialog
         :param combo: Combo box with all the available players
@@ -16,10 +21,10 @@ class DialogHandlers:
         player_id = util.get_combo_value(combo, 0)
         if player_id:
             self.app.ui.get_object('add_player_combo_box').set_active(-1)
-            # player = sql.Player.get(sql.Player.id == player_id)
+            player = self.app.get_by_id(self.app.players, player_id)
             store = self.app.ui.get_object('episode_players_store')
-            # if not any(row[0] == player_id for row in store):
-            #     store.append([player_id, player.name, player.hex_id])
+            if not any(row[0] == player_id for row in store):
+                store.append([player_id, player.name, player.hex_id])
 
     def do_add_enemy(self, entry):
         if entry.get_text():
@@ -27,9 +32,6 @@ class DialogHandlers:
             # enemy = sql.Enemy.create(name=entry.get_text(), season=self.app.get_selected_season_id())
             # store.append([enemy.name, False, 0, enemy.id])
             entry.set_text('')
-
-    def do_manage_drinks(self, *_):
-        result = dialogs.show_manage_drinks_dialog(self.app.ui)
 
     def do_show_date_picker(self, entry: 'Gtk.Entry', *_):
         dialog = self.app.ui.get_object('date_picker_dialog')

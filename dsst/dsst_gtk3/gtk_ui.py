@@ -75,6 +75,12 @@ class GtkUi:
             self.data_client.send_request('update_season', season)
             self.seasons.valid = False
 
+    def update_episode(self, episode: 'models.Episode'):
+        with util.network_operation(self):
+            self.data_client.send_request('update_episode', episode)
+            self.episodes.valid = False
+            self.season_stats.valid = False
+
     def update_status_bar_meta(self):
         self.ui.get_object('connection_label').set_text(self.meta.get('connection'))
         self.ui.get_object('db_label').set_text(self.meta.get('database') or '')
@@ -92,6 +98,13 @@ class GtkUi:
         """
         (model, tree_iter) = self.ui.get_object('episodes_tree_view').get_selection().get_selected()
         return model.get_value(tree_iter, 0) if tree_iter else None
+
+    @staticmethod
+    def get_by_id(cache: 'util.Cache', object_id: int):
+        try:
+            return [x for x in cache.data if x.id == object_id][0]
+        except KeyError:
+            return None
 
 
 def main():

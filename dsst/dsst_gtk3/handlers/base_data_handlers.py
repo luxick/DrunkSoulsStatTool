@@ -7,7 +7,7 @@ class BaseDataHandlers:
         self.app = app
 
     def do_manage_players(self, *_):
-        dialogs.show_manage_players_dialog(self.app.ui, 'Manage Players')
+        dialogs.run_management_dialog(self.app.ui, 'manage_players_dialog')
 
     def do_add_player(self, entry):
         if entry.get_text():
@@ -16,7 +16,7 @@ class BaseDataHandlers:
             self.app.reload()
 
     def do_manage_enemies(self, *_):
-        dialogs.show_manage_enemies_dialog(self.app.ui, self.app.get_selected_season_id())
+        dialogs.run_management_dialog(self.app.ui, 'manage_enemies_dialog')
 
     def on_player_name_edited(self, _, index, value):
         row = self.app.ui.get_object('all_players_store')[index]

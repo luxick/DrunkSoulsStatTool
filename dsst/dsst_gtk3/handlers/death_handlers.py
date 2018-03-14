@@ -1,5 +1,5 @@
 from gi.repository import Gtk
-from dsst_gtk3 import dialogs
+from dsst_gtk3 import dialogs, gtk_ui
 
 
 class DeathHandlers:
@@ -11,9 +11,10 @@ class DeathHandlers:
         ep_id = self.app.get_selected_episode_id()
         if not ep_id:
             return
-        result = dialogs.show_edit_death_dialog(self.app.ui, ep_id)
+        result = dialogs.edit_death(self.app)
         if result == Gtk.ResponseType.OK:
-            self.app.reload()
+            self.app.episodes.valid = False
+            self.app.full_reload()
 
     def on_penalty_drink_changed(self, _, path, text):
         self.app.ui.get_object('player_penalties_store')[path][2] = text

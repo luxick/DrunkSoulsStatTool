@@ -4,7 +4,7 @@ This module contains UI functions for displaying different dialogs
 import datetime
 from gi.repository import Gtk
 from common import models
-from dsst_gtk3 import gtk_ui
+from dsst_gtk3 import gtk_ui, util
 
 
 def enter_string_dialog(builder: Gtk.Builder, title: str, value=None) -> str:
@@ -97,49 +97,68 @@ def edit_episode(app: 'gtk_ui.GtkUi', season_id: int, episode: 'models.Episode'=
     return episode
 
 
-def show_edit_death_dialog(builder: Gtk.Builder, episode_id: int, death):
-    pass
-    # """Show a dialog for editing or creating death events.
-    # :param builder: A Gtk.Builder object
-    # :param episode_id: ID to witch the death event belongs to
-    # :param death: (Optional) Death event witch should be edited
-    # :return: Gtk.ResponseType of the dialog
-    # """
-    # dialog = builder.get_object("edit_death_dialog")  # type: Gtk.Dialog
-    # dialog.set_transient_for(builder.get_object("main_window"))
-    # with sql.db.atomic():
-    #     if death:
-    #         index = util.get_index_of_combo_model(builder.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
-    #         builder.get_object('edit_death_enemy_combo').set_active(index)
-    #
-    #     # TODO Default drink should be set in config
-    #     default_drink = sql.Drink.get().name
-    #     store = builder.get_object('player_penalties_store')
-    #     store.clear()
-    #     for player in builder.get_object('episode_players_store'):
-    #         store.append([None, player[1], default_drink, player[0]])
-    #
-    #     # Run the dialog
-    #     result = dialog.run()
-    #     dialog.hide()
-    #     if result != Gtk.ResponseType.OK:
-    #         sql.db.rollback()
-    #         return result
-    #
-    #     # Collect info from widgets and save to database
-    #     player_id = util.get_combo_value(builder.get_object('edit_death_player_combo'), 0)
-    #     enemy_id = util.get_combo_value(builder.get_object('edit_death_enemy_combo'), 3)
-    #     comment = builder.get_object('edit_death_comment_entry').get_text()
-    #     if not death:
-    #         death = sql.Death.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
-    #
-    #     store = builder.get_object('player_penalties_store')
-    #     size = builder.get_object('edit_death_size_spin').get_value()
-    #     for entry in store:
-    #         drink_id = sql.Drink.get(sql.Drink.name == entry[2])
-    #         sql.Penalty.create(size=size, player=entry[3], death=death.id, drink=drink_id)
-    #
-    #     return result
+def edit_death(app: 'gtk_ui.GtkUi', death: 'models.Death'=None):
+    """Show a dialog to create or edit death events for an episode
+    :param app: Main Gtk application
+    :param death: (Optional) Existing death object to edit
+    :return: Death object or None if dialog was canceled
+    """
+    if not death:
+        death = models.Death()
+        death.episode = app.get_selected_episode_id()
+        death.info = ""
+        death.penalties = []
+        death.time = datetime.time(0, 0)
+    hour_spin = app.ui.get_object('death_hour_spin')
+    min_spin = app.ui.get_object('death_min_spin')
+    # Set time of death
+    hour_spin.set_value(death.time.hour)
+    min_spin.set_value(death.time.minute)
+    # Set Enemy
+    if death.enemy:
+        index = util.get_index_of_combo_model(app.ui.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
+        app.ui.get_object('edit_death_enemy_combo').set_active(index)
+    # Set player
+    if death.player:
+        index = util.get_index_of_combo_model(app.ui.get_object('edit_death_player_combo'), 0, death.player.id)
+        app.ui.get_object('edit_death_player_combo').set_active(index)
+    # Set shot size
+    if death.penalties:
+        app.ui.get_object('edit_death_size_spin').set_value(death.penalties[0].size)
+    # Set info comment
+    app.ui.get_object('edit_death_comment_entry').set_text(death.info)
+    # Set penalties
+    default_drink = app.drinks.data[0].name
+    store = app.ui.get_object('player_penalties_store')
+    store.clear()
+    if death.penalties:
+        for penalty in death.penalties:
+            store.append([penalty.id, penalty.player.name, penalty.drink.name, penalty.player.id])
+    else:
+        for player in app.ui.get_object('episode_players_store'):
+            store.append([None, player[1], default_drink, player[0]])
+
+    # Run the dialog
+    dialog = app.ui.get_object("edit_death_dialog")  # type: Gtk.Dialog
+    result = dialog.run()
+    dialog.hide()
+    if result != Gtk.ResponseType.OK:
+        return None
+
+    # Parse the inputs
+    death.time = datetime.time(hour_spin.get_value(), min_spin.set_value)
+    death.enemy = util.get_combo_value(app.ui.get_object('edit_death_enemy_combo'), 3)
+    death.player = util.get_combo_value(app.ui.get_object('edit_death_player_combo'), 0)
+    death.info = app.ui.get_object('edit_death_comment_entry').get_text()
+    store = app.ui.get_object('player_penalties_store')
+    size = app.ui.get_object('edit_death_size_spin').get_value()
+    death.penalties.clear()
+    for entry in store:
+        drink_id = [drink.id for drink in app.drinks.data if drink.name == entry[2]][0]
+        penalty = models.Penalty({'id': entry[0], 'size': size, 'drink': drink_id, 'player': entry[3]})
+        death.penalties.append(penalty)
+
+    return death
 
 
 def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory):

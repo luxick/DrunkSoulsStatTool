@@ -8,6 +8,15 @@ class WriteFunctions:
         return 'Season created.'
 
     @staticmethod
+    def update_enemy(enemy: 'models.Enemy'):
+        (sql.Enemy
+         .insert(id=enemy.id, boss=enemy.boss, name=enemy.name, season=enemy.season)
+         .on_conflict(update={sql.Enemy.name: enemy.name,
+                              sql.Enemy.boss: enemy.boss,
+                              sql.Enemy.season: enemy.season})
+         .execute())
+
+    @staticmethod
     def update_season(season: 'models.Season', *_):
         (sql.Season
          .insert(id=season.id, number=season.number, game_name=season.game_name, start_date=season.start_date,

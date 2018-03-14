@@ -27,6 +27,10 @@ class ReadFunctions:
         return [mapping.db_to_player(player) for player in sql.Player.select()]
 
     @staticmethod
+    def load_enemies(season_id, *_):
+        pass
+
+    @staticmethod
     def load_drinks(*_):
         return [mapping.db_to_drink(drink) for drink in sql.Drink.select()]
 
@@ -39,7 +43,8 @@ class ReadFunctions:
                             sql_func.get_player_victories_for_season(season_id, player.id),
                             sql_func.get_player_deaths_for_season(season_id, player.id))
                            for player in players]
-        model.enemies = [(enemy.name,
+        model.enemies = [(enemy.id,
+                          enemy.name,
                           sql_func.enemy_attempts(enemy.id),
                           sql.Victory.select().where(sql.Victory.enemy == enemy.id).exists(),
                           enemy.boss)

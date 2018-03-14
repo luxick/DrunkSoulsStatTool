@@ -10,12 +10,12 @@ class SeasonHandlers:
         season = dialogs.edit_season(self.app.ui)
         if season:
             self.app.update_season(season)
-            self.app.reload()
+            self.app.full_reload()
 
     def do_season_selected(self, *_):
         self.app.episodes.valid = False
         self.app.season_stats.valid = False
-        self.app.reload()
+        self.app.full_reload()
 
     def do_add_episode(self, *_):
         season_id = self.app.get_selected_season_id()
@@ -24,7 +24,7 @@ class SeasonHandlers:
         ep = dialogs.edit_episode(self.app, season_id)
         if ep:
             self.app.update_episode(ep)
-            self.app.reload()
+            self.app.full_reload()
 
     def on_selected_episode_changed(self, *_):
         reload.reload_episode_stats(self.app)

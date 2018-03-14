@@ -40,35 +40,32 @@ class GtkUi:
         self.meta = {'connection': '{}:{}'.format(config.get('host'), config.get('port'))}
         # Load base data and seasons
         self.load_server_meta()
-        self.reload()
+        self.full_reload()
         self.update_status_bar_meta()
 
     def load_server_meta(self):
         self.meta['database'] = self.data_client.send_request('load_db_meta')
 
-    def reload(self):
+    def full_reload(self):
         with util.network_operation(self):
-            refresh_base = False
-            if not self.players.valid:
-                self.players.data = self.data_client.send_request('load_players')
-                refresh_base = True
-            if not self.drinks.valid:
-                self.drinks.data = self.data_client.send_request('load_drinks')
-                refresh_base= True
-            if not self.seasons.valid:
-                self.seasons.data = self.data_client.send_request('load_seasons')
-                refresh_base = True
-            if refresh_base:
-                reload.reload_base_data(self.ui, self)
+            self.players.data = self.data_client.send_request('load_players')
+            self.drinks.data = self.data_client.send_request('load_drinks')
+            self.seasons.data = self.data_client.send_request('load_seasons')
+            season_id = self.get_selected_season_id()
+            if season_id:
+                self.episodes.data = self.data_client.send_request('load_episodes', season_id)
+                self.season_stats.data = self.data_client.send_request('load_season_stats', season_id)
+                cur_season = [s for s in self.seasons.data if s.id == season_id][0]
+                self.enemies.data = cur_season.enemies
+        reload.rebuild_view_data(self)
 
-        if not self.episodes.valid:
-            with util.network_operation(self):
-                season_id = self.get_selected_season_id()
-                if season_id:
-                    self.episodes.data = self.data_client.send_request('load_episodes', season_id)
-                    self.season_stats.data = self.data_client.send_request('load_season_stats', season_id)
-                    reload.reload_episodes(self.ui, self)
-                    reload.reload_season_stats(self)
+    def reload(self):
+        pass
+
+    def update_enemy(self, enemy: 'models.Enemy'):
+        with util.network_operation(self):
+            self.data_client.send_request('update_enemy', enemy)
+            self.full_reload()
 
     def update_season(self, season: 'models.Season'):
         with util.network_operation(self):

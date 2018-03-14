@@ -57,6 +57,7 @@ class Death:
         self.enemy = arg.get('enemy')
         self.episode = arg.get('episode')
         self.penalties = arg.get('penalties')
+        self.time = arg.get('time')
 
 
 class Penalty:

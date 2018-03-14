@@ -3,37 +3,38 @@ from gi.repository import Gtk
 from dsst_gtk3 import util, gtk_ui
 
 
-def reload_base_data(builder: Gtk.Builder, app: 'gtk_ui.GtkUi',):
+def reload_base_data(app: 'gtk_ui.GtkUi',):
     """Reload function for all base data witch is not dependant on a selected season or episode
     :param app: GtkUi instance
     :param builder: Gtk.Builder with loaded UI
     """
     # Rebuild all players store
-    builder.get_object('all_players_store').clear()
+    app.ui.get_object('all_players_store').clear()
     for player in app.players.data:
-        builder.get_object('all_players_store').append([player.id, player.name, player.hex_id])
+        app.ui.get_object('all_players_store').append([player.id, player.name, player.hex_id])
     # Rebuild drink store
-        builder.get_object('drink_store').clear()
+        app.ui.get_object('drink_store').clear()
     for drink in app.drinks.data:
-        builder.get_object('drink_store').append([drink.id, drink.name, '{:.2f}%'.format(drink.vol)])
+        app.ui.get_object('drink_store').append([drink.id, drink.name, '{:.2f}%'.format(drink.vol)])
     # Rebuild seasons store
-    combo = builder.get_object('season_combo_box')  # type: Gtk.ComboBox
+    combo = app.ui.get_object('season_combo_box')  # type: Gtk.ComboBox
     active = combo.get_active()
     with util.block_handler(combo, app.handlers.do_season_selected):
-        store = builder.get_object('seasons_store')
+        store = app.ui.get_object('seasons_store')
         store.clear()
         for season in app.seasons.data:
             store.append([season.id, season.game_name])
         combo.set_active(active)
 
 
-def reload_episodes(builder: Gtk.Builder, app: 'gtk_ui.GtkUi'):
+def reload_episodes(app: 'gtk_ui.GtkUi'):
     """Reload all data that is dependant on a selected season
     :param app: GtkUi instance
     :param builder: Gtk.Builder with loaded UI
     """
     # Rebuild episodes store
-    selection = builder.get_object('episodes_tree_view').get_selection()
+    if not app.get_selected_season_id(): return
+    selection = app.ui.get_object('episodes_tree_view').get_selection()
     with util.block_handler(selection, app.handlers.on_selected_episode_changed):
         model, selected_paths = selection.get_selected_rows()
         model.clear()
@@ -47,6 +48,7 @@ def reload_season_stats(app: 'gtk_ui.GtkUi'):
     """Load statistic data for selected season
     :param app: GtkUi instance
     """
+    if not app.season_stats.valid: return
     season_stats = app.season_stats.data
     # Load player kill/death data
     store = app.ui.get_object('player_season_store')
@@ -57,15 +59,17 @@ def reload_season_stats(app: 'gtk_ui.GtkUi'):
     # Load enemy stats for season
     store = app.ui.get_object('enemy_season_store')
     store.clear()
-    for enemy_name, deaths, defeated, boss in season_stats.enemies:
-        store.append([enemy_name, defeated, deaths, boss])
+    for enemy_id, enemy_name, deaths, defeated, boss in season_stats.enemies:
+        store.append([enemy_name, defeated, deaths, boss, enemy_id])
 
 
 def reload_episode_stats(app: 'gtk_ui.GtkUi'):
     """Reload all data that is dependant on a selected episode
     :param app: app: GtkUi instance
     """
-    episode = [ep for ep in app.episodes.data if ep.id == app.get_selected_episode_id()][0]
+    ep_id = app.get_selected_episode_id()
+    if not app.episodes.valid or not ep_id: return
+    episode = [ep for ep in app.episodes.data if ep.id == ep_id][0]
     store = app.ui.get_object('episode_players_store')
     store.clear()
     for player in episode.players:
@@ -107,3 +111,11 @@ def fill_list_store(store: Gtk.ListStore, models: list):
     store.clear()
     for model in models:
         pass
+
+
+def rebuild_view_data(app: 'gtk_ui.GtkUi'):
+    reload_base_data(app)
+    reload_episodes(app)
+    reload_episode_stats(app)
+    reload_season_stats(app)
+

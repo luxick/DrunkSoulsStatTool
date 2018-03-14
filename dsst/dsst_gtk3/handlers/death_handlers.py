@@ -11,9 +11,9 @@ class DeathHandlers:
         ep_id = self.app.get_selected_episode_id()
         if not ep_id:
             return
-        result = dialogs.show_edit_death_dialog(self.app.ui, ep_id)
-        if result == Gtk.ResponseType.OK:
-            self.app.reload()
+        death = dialogs.create_death(self.app)
+        if death:
+            self.app.save_death(death)
 
     def on_penalty_drink_changed(self, _, path, text):
         self.app.ui.get_object('player_penalties_store')[path][2] = text

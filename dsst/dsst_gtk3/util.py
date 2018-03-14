@@ -4,21 +4,36 @@ This modules contains general utilities for the GTK application to use.
 import json
 import os
 from contextlib import contextmanager
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 from typing import Callable
+from dsst_gtk3 import gtk_ui
 from zipfile import ZipFile
 
 CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.config', 'dsst', 'config.json')
 DEFAULT_CONFIG = {
     'auto_connect': False,
-    'sql_connections': [{
+    'servers': [{
         'host': 'localhost',
-        'port': 3306,
-        'db_name': 'dsst',
-        'user': 'dsst',
-        'password': 'dsst'}
+        'port': 12345,
+        'buffer_size': 1024,
+        'auth_token': ''}
     ]
 }
+
+
+class Cache:
+    def __init__(self, data={}, valid=False):
+        self._data = data
+        self.valid = valid
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+        self.valid = True
 
 
 @contextmanager
@@ -30,6 +45,21 @@ def block_handler(widget: 'Gtk.Widget', handler_func: Callable):
     widget.handler_block_by_func(handler_func)
     yield
     widget.handler_unblock_by_func(handler_func)
+
+
+@contextmanager
+def network_operation(app: 'gtk_ui.GtkUi'):
+    """Run operation in try/except block and display exception in a dialog
+    :param app: Reference to main Gtk Application
+    """
+    app.ui.get_object('status_bar').push(0, 'Connecting to server')
+    try:
+        yield
+    except Exception as e:
+        print(e)
+        app.ui.get_object('status_bar').push(0, str(e))
+    else:
+        app.ui.get_object('status_bar').push(0, '')
 
 
 def get_combo_value(combo, index: int):
@@ -59,7 +89,7 @@ def get_index_of_combo_model(widget, column: int, value: int):
 def load_ui_resource_from_file(resource_path: list) -> str:
     project_base_dir = os.path.dirname(os.path.dirname(__file__))
     full_path = os.path.join(project_base_dir, *resource_path)
-    with open(full_path, 'r') as file:
+    with open(full_path, 'r', encoding='utf8') as file:
         return file.read()
 
 
@@ -77,8 +107,33 @@ def load_ui_resource_string(resource_path: list) -> str:
     if os.path.isdir(os.path.dirname(__file__)):
         return load_ui_resource_from_file(resource_path)
     else:
-
         return load_ui_resource_from_archive(resource_path)
+
+
+def load_image_resource_file(resource_path: list, width: int, height: int) -> GdkPixbuf:
+    project_base_dir = os.path.dirname(os.path.dirname(__file__))
+    full_path = os.path.join(project_base_dir, *resource_path)
+    return GdkPixbuf.Pixbuf.new_from_file_at_scale(full_path, width=width, height=height, preserve_aspect_ratio=False)
+
+
+def load_image_resource_archive(resource_path: list, width: int, height: int) -> GdkPixbuf:
+    resource_path = os.path.join(*resource_path)
+    zip_path = os.path.dirname(os.path.dirname(__file__))
+    with ZipFile(zip_path, 'r') as archive:
+        with archive.open(resource_path) as data:
+            loader = GdkPixbuf.PixbufLoader()
+            loader.write(data.read())
+            pixbuf = loader.get_pixbuf()    # type: GdkPixbuf.Pixbuf
+            pixbuf = pixbuf.scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
+            loader.close()
+            return pixbuf
+
+
+def load_image_resource(resource_path: list, width: int, height: int) -> GdkPixbuf:
+    if os.path.isdir(os.path.dirname(__file__)):
+        return load_image_resource_file(resource_path, width, height)
+    else:
+        return load_image_resource_archive(resource_path, width, height)
 
 
 def load_config(config_path: str) -> dict:

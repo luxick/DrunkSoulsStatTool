@@ -2,19 +2,33 @@
 Over-engineered statistics tool for keeping track of a drinking game 
 
 ## Running the application
-### Build executable zip archive
-Run build script
+The application is split into an server and client part.
+To run standalone on a single machine you will have to have a running
+dsst-server that is connected to a mysql database.
 
-`$ python3 ./build.py` 
+Using the client you can then connect to the server via its 
+specified port.
+### Building
+Run the build script with the desired option
 
-The archive will be saved into the `build` folder. The file is completly standalone and can be run from anywhere.
+`$ python3 ./build.py {gtk3|server|all}`
 
-`$ ./build/dsst`
+The archive(s) will be saved into the `build` folder.
+To run either server or client, just execute the archive files.
 
-### Run python script directly 
-`$ python3 ./dsst/__main__.py`
+`$ ./build/dsst-server-0.1` 
+
+To run the server.
+
+`$ ./build/dsst-gtk3-0.1`
+
+To run the GTK client.
 
 ## Dependencies
-- GObject (Gtk3)
+- Python 3
+### Client
+- python-gi <= v3.16 (Gtk3)
+
+### Server
 - mysqlclient (Python Mysql Driver)
 - peewee (ORM Framework)

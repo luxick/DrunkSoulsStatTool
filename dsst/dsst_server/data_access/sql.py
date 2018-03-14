@@ -5,8 +5,14 @@ Example:
 from sql import Episode
 query = Episode.select().where(Episode.name == 'MyName')
 """
+import sys
+import datetime
 
-from peewee import *
+try:
+    from peewee import *
+except ImportError:
+    print('peewee package not installed')
+    sys.exit(0)
 
 db = MySQLDatabase(None)
 
@@ -56,7 +62,7 @@ class Drink(Model):
 class Enemy(Model):
     id = AutoField()
     name = CharField()
-    optional = BooleanField()
+    boss = BooleanField()
     season = ForeignKeyField(Season, backref='enemies')
 
     class Meta:
@@ -66,6 +72,7 @@ class Enemy(Model):
 class Death(Model):
     id = AutoField()
     info = CharField(null=True)
+    time = TimeField(default=datetime.time(0, 0))
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
     episode = ForeignKeyField(Episode, backref='deaths')
@@ -88,6 +95,7 @@ class Penalty(Model):
 class Victory(Model):
     id = AutoField()
     info = CharField(null=True)
+    time = TimeField(default=datetime.time(0, 0))
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
     episode = ForeignKeyField(Episode, backref='victories')

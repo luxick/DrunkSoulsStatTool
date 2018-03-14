@@ -1,5 +1,4 @@
-from dsst_sql import sql
-from dsst_gtk3 import dialogs, gtk_ui
+from dsst_gtk3 import dialogs, gtk_ui, reload
 
 
 class SeasonHandlers:
@@ -8,23 +7,27 @@ class SeasonHandlers:
         self.app = app
 
     def do_add_season(self, *_):
-        name = dialogs.enter_string_dialog(self.app.ui, 'Name for the new Season')
-        if name:
-            sql.Season.create(game_name=name, number=1)
-            self.app.reload()
+        season = dialogs.edit_season(self.app.ui)
+        if season:
+            self.app.update_season(season)
+            self.app.full_reload()
 
     def do_season_selected(self, *_):
-        self.app.reload()
+        self.app.episodes.valid = False
+        self.app.season_stats.valid = False
+        self.app.full_reload()
 
     def do_add_episode(self, *_):
         season_id = self.app.get_selected_season_id()
         if not season_id:
             return
-        dialogs.show_episode_dialog(self.app.ui, 'Create new Episode', season_id)
-        self.app.reload()
+        ep = dialogs.edit_episode(self.app, season_id)
+        if ep:
+            self.app.update_episode(ep)
+            self.app.full_reload()
 
     def on_selected_episode_changed(self, *_):
-        self.app.reload()
+        reload.reload_episode_stats(self.app)
 
     def on_episode_double_click(self, *_):
         self.app.ui.get_object('stats_notebook').set_current_page(1)

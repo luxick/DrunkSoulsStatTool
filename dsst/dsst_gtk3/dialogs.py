@@ -146,8 +146,8 @@ def edit_death(app: 'gtk_ui.GtkUi', death: 'models.Death'=None):
         return None
 
     # Parse the inputs
-    death.time = datetime.time(hour_spin.get_value(), min_spin.set_value)
-    death.enemy = util.get_combo_value(app.ui.get_object('edit_death_enemy_combo'), 3)
+    death.time = datetime.time(int(hour_spin.get_value()), int(min_spin.get_value()))
+    death.enemy = util.get_combo_value(app.ui.get_object('edit_death_enemy_combo'), 4)
     death.player = util.get_combo_value(app.ui.get_object('edit_death_player_combo'), 0)
     death.info = app.ui.get_object('edit_death_comment_entry').get_text()
     store = app.ui.get_object('player_penalties_store')

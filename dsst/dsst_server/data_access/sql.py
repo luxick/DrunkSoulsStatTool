@@ -6,6 +6,8 @@ from sql import Episode
 query = Episode.select().where(Episode.name == 'MyName')
 """
 import sys
+import datetime
+
 try:
     from peewee import *
 except ImportError:
@@ -70,6 +72,7 @@ class Enemy(Model):
 class Death(Model):
     id = AutoField()
     info = CharField(null=True)
+    time = TimeField(default=datetime.time(0, 0))
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
     episode = ForeignKeyField(Episode, backref='deaths')

@@ -33,6 +33,16 @@ class WriteFunctions:
          .execute())
 
     @staticmethod
+    def save_death(death: 'models.Death'):
+        with sql.db.atomic():
+            created_id = (sql.Death
+                          .insert(info=death.info, player=death.player, enemy=death.enemy, episode=death.episode,
+                                  time=death.time)
+                          .execute())
+            for penalty in death.penalties:
+                sql.Penalty.create(death=created_id, size=penalty.size, drink=penalty.drink, player=penalty.player)
+
+    @staticmethod
     def update_season(season: 'models.Season', *_):
         (sql.Season
          .insert(id=season.id, number=season.number, game_name=season.game_name, start_date=season.start_date,

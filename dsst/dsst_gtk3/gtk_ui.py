@@ -77,6 +77,11 @@ class GtkUi:
             self.data_client.send_request('update_drink', drink)
             self.full_reload()
 
+    def save_death(self, death: 'models.Death'):
+        with util.network_operation(self):
+            self.data_client.send_request('save_death', death)
+            self.full_reload()
+
     def update_season(self, season: 'models.Season'):
         with util.network_operation(self):
             self.data_client.send_request('update_season', season)

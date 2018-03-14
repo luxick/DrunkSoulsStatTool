@@ -43,6 +43,13 @@ class WriteFunctions:
                 sql.Penalty.create(death=created_id, size=penalty.size, drink=penalty.drink, player=penalty.player)
 
     @staticmethod
+    def save_victory(victory: 'models.Victory'):
+        (sql.Victory
+         .insert(info=victory.info, player=victory.player, enemy=victory.enemy, time=victory.time,
+                 episode=victory.episode, id=victory.id)
+         .execute())
+
+    @staticmethod
     def update_season(season: 'models.Season', *_):
         (sql.Season
          .insert(id=season.id, number=season.number, game_name=season.game_name, start_date=season.start_date,

@@ -11,7 +11,7 @@ class DeathHandlers:
         ep_id = self.app.get_selected_episode_id()
         if not ep_id:
             return
-        death = dialogs.edit_death(self.app)
+        death = dialogs.create_death(self.app)
         if death:
             self.app.save_death(death)
 

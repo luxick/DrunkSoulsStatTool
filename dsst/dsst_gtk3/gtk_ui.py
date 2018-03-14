@@ -65,22 +65,27 @@ class GtkUi:
     def update_enemy(self, enemy: 'models.Enemy'):
         with util.network_operation(self):
             self.data_client.send_request('update_enemy', enemy)
-            self.full_reload()
+        self.full_reload()
 
     def update_player(self, player: 'models.Player'):
         with util.network_operation(self):
             self.data_client.send_request('update_player', player)
-            self.full_reload()
+        self.full_reload()
 
     def update_drink(self, drink: 'models.Drink'):
         with util.network_operation(self):
             self.data_client.send_request('update_drink', drink)
-            self.full_reload()
+        self.full_reload()
 
     def save_death(self, death: 'models.Death'):
         with util.network_operation(self):
             self.data_client.send_request('save_death', death)
-            self.full_reload()
+        self.full_reload()
+
+    def save_victory(self, victory: 'models.Victory'):
+        with util.network_operation(self):
+            self.data_client.send_request('save_victory', victory)
+        self.full_reload()
 
     def update_season(self, season: 'models.Season'):
         with util.network_operation(self):

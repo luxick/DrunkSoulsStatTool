@@ -1,5 +1,5 @@
 from gi.repository import Gtk
-from dsst_gtk3 import dialogs
+from dsst_gtk3 import dialogs, gtk_ui
 
 
 class VictoryHandlers:
@@ -11,6 +11,6 @@ class VictoryHandlers:
         ep_id = self.app.get_selected_episode_id()
         if not ep_id:
             return
-        result = dialogs.show_edit_victory_dialog(self.app.ui, ep_id)
-        if result == Gtk.ResponseType.OK:
-            self.app.full_reload()
+        victory = dialogs.create_victory(self.app)
+        if victory:
+            self.app.save_victory(victory)

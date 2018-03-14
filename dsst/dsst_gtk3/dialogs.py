@@ -97,47 +97,11 @@ def edit_episode(app: 'gtk_ui.GtkUi', season_id: int, episode: 'models.Episode'=
     return episode
 
 
-def edit_death(app: 'gtk_ui.GtkUi', death: 'models.Death'=None):
-    """Show a dialog to create or edit death events for an episode
+def create_death(app: 'gtk_ui.GtkUi'):
+    """Show a dialog to create death events for an episode
     :param app: Main Gtk application
-    :param death: (Optional) Existing death object to edit
     :return: Death object or None if dialog was canceled
     """
-    if not death:
-        death = models.Death()
-        death.episode = app.get_selected_episode_id()
-        death.info = ""
-        death.penalties = []
-        death.time = datetime.time(0, 0)
-    hour_spin = app.ui.get_object('death_hour_spin')
-    min_spin = app.ui.get_object('death_min_spin')
-    # Set time of death
-    hour_spin.set_value(death.time.hour)
-    min_spin.set_value(death.time.minute)
-    # Set Enemy
-    if death.enemy:
-        index = util.get_index_of_combo_model(app.ui.get_object('edit_death_enemy_combo'), 0, death.enemy.id)
-        app.ui.get_object('edit_death_enemy_combo').set_active(index)
-    # Set player
-    if death.player:
-        index = util.get_index_of_combo_model(app.ui.get_object('edit_death_player_combo'), 0, death.player.id)
-        app.ui.get_object('edit_death_player_combo').set_active(index)
-    # Set shot size
-    if death.penalties:
-        app.ui.get_object('edit_death_size_spin').set_value(death.penalties[0].size)
-    # Set info comment
-    app.ui.get_object('edit_death_comment_entry').set_text(death.info)
-    # Set penalties
-    default_drink = app.drinks.data[0].name
-    store = app.ui.get_object('player_penalties_store')
-    store.clear()
-    if death.penalties:
-        for penalty in death.penalties:
-            store.append([penalty.id, penalty.player.name, penalty.drink.name, penalty.player.id])
-    else:
-        for player in app.ui.get_object('episode_players_store'):
-            store.append([None, player[1], default_drink, player[0]])
-
     # Run the dialog
     dialog = app.ui.get_object("edit_death_dialog")  # type: Gtk.Dialog
     result = dialog.run()
@@ -145,14 +109,18 @@ def edit_death(app: 'gtk_ui.GtkUi', death: 'models.Death'=None):
     if result != Gtk.ResponseType.OK:
         return None
 
+    death = models.Death()
+    hour_spin = app.ui.get_object('death_hour_spin')
+    min_spin = app.ui.get_object('death_min_spin')
     # Parse the inputs
     death.time = datetime.time(int(hour_spin.get_value()), int(min_spin.get_value()))
     death.enemy = util.get_combo_value(app.ui.get_object('edit_death_enemy_combo'), 4)
     death.player = util.get_combo_value(app.ui.get_object('edit_death_player_combo'), 0)
     death.info = app.ui.get_object('edit_death_comment_entry').get_text()
+    death.episode = app.get_selected_episode_id()
     store = app.ui.get_object('player_penalties_store')
     size = app.ui.get_object('edit_death_size_spin').get_value()
-    death.penalties.clear()
+    death.penalties = []
     for entry in store:
         drink_id = [drink.id for drink in app.drinks.data if drink.name == entry[2]][0]
         penalty = models.Penalty({'id': entry[0], 'size': size, 'drink': drink_id, 'player': entry[3]})
@@ -161,43 +129,24 @@ def edit_death(app: 'gtk_ui.GtkUi', death: 'models.Death'=None):
     return death
 
 
-def show_edit_victory_dialog(builder: Gtk.Builder, episode_id: int, victory):
-    pass
-    # """Show a dialog for editing or creating victory events.
-    # :param builder: A Gtk.Builder object
-    # :param episode_id: ID to witch the victory event belongs to
-    # :param victory: (Optional) Victory event witch should be edited
-    # :return: Gtk.ResponseType of the dialog
-    # """
-    # dialog = builder.get_object("edit_victory_dialog")  # type: Gtk.Dialog
-    # dialog.set_transient_for(builder.get_object("main_window"))
-    # with sql.db.atomic():
-    #     if victory:
-    #         infos = [['edit_victory_player_combo', victory.player.id],
-    #                  ['edit_victory_enemy_combo', victory.enemy.id]]
-    #         for info in infos:
-    #             combo = builder.get_object(info[0])
-    #             index = util.get_index_of_combo_model(combo, 0, info[1])
-    #             combo.set_active(index)
-    #         builder.get_object('victory_comment_entry').set_text(victory.info)
-    #
-    #     # Run the dialog
-    #     result = dialog.run()
-    #     dialog.hide()
-    #     if result != Gtk.ResponseType.OK:
-    #         sql.db.rollback()
-    #         return result
-    #
-    #     # Collect info from widgets and save to database
-    #     player_id = util.get_combo_value(builder.get_object('edit_victory_player_combo'), 0)
-    #     enemy_id = util.get_combo_value(builder.get_object('edit_victory_enemy_combo'), 3)
-    #     comment = builder.get_object('victory_comment_entry').get_text()
-    #     if not victory:
-    #         sql.Victory.create(episode=episode_id, player=player_id, enemy=enemy_id, info=comment)
-    #     else:
-    #         victory.player = player_id
-    #         victory.enemy = enemy_id
-    #         victory.info = comment
-    #         victory.save()
-    #
-    #     return result
+def create_victory(app: 'gtk_ui.GtkUi'):
+    """Show a dialog for creating victory events
+    :param app: Reference to main gtk ui object
+    :return: Created victory object or None, if canceled
+    """
+    dialog = app.ui.get_object('edit_victory_dialog')
+    result = dialog.run()
+    dialog.hide()
+    if result != Gtk.ResponseType.OK:
+        return None
+
+    hour_spin = app.ui.get_object('vic_hour_spin')
+    min_spin = app.ui.get_object('vic_min_spin')
+    victory = models.Victory()
+    victory.episode = app.get_selected_episode_id()
+    victory.info = app.ui.get_object('victory_comment_entry').get_text()
+    victory.player = util.get_combo_value(app.ui.get_object('edit_victory_player_combo'), 0)
+    victory.enemy = util.get_combo_value(app.ui.get_object('edit_victory_enemy_combo'), 4)
+    victory.time = datetime.time(int(hour_spin.get_value()), int(min_spin.get_value()))
+
+    return victory

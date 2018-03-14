@@ -81,13 +81,14 @@ def reload_episode_stats(app: 'gtk_ui.GtkUi'):
         penalties = [x.drink.name for x in death.penalties]
         penalties = ['{}x {}'.format(number, drink) for drink, number in Counter(penalties).items()]
         penalty_string = ', '.join(penalties)
-        time_string = '{}:{}'.format(death.time.hour, death.time.minute)
+        time_string = '{:02d}:{:02d}'.format(death.time.hour, death.time.minute)
         store.append([death.id, death.player.name, death.enemy.name, penalty_string, time_string])
     # Reload victory store for notebook view
     store = app.ui.get_object('episode_victories_store')
     store.clear()
     for victory in episode.victories:
-        store.append([victory.id, victory.player.name, victory.enemy.name, victory.info])
+        time_string = '{:02d}:{:02d}'.format(victory.time.hour, victory.time.minute)
+        store.append([victory.id, victory.player.name, victory.enemy.name, victory.info, time_string])
 
     # Stat grid
     app.ui.get_object('ep_stat_title').set_text('Stats for episode {}\n{}'.format(episode.number, episode.name))

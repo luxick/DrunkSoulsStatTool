@@ -76,6 +76,7 @@ class Victory:
         self.player = arg.get('player')
         self.enemy = arg.get('enemy')
         self.episode = arg.get('episode')
+        self.time = arg.get('time')
 
 
 class SeasonStats:

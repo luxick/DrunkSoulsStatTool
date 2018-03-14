@@ -95,6 +95,7 @@ class Penalty(Model):
 class Victory(Model):
     id = AutoField()
     info = CharField(null=True)
+    time = TimeField(default=datetime.time(0, 0))
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
     episode = ForeignKeyField(Episode, backref='victories')

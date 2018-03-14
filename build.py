@@ -49,6 +49,7 @@ def build_server():
 def build_gtk3():
     build('dsst-gtk3-{}'.format(CLIENT_VERSION), 'dsst_gtk3', 'dsst_gtk3.gtk_ui:main')
 
+
 build_modes = {
     'server': build_server,
     'gtk3': build_gtk3

@@ -67,6 +67,11 @@ class GtkUi:
             self.data_client.send_request('update_enemy', enemy)
             self.full_reload()
 
+    def update_player(self, player: 'models.Player'):
+        with util.network_operation(self):
+            self.data_client.send_request('update_player', player)
+            self.full_reload()
+
     def update_season(self, season: 'models.Season'):
         with util.network_operation(self):
             self.data_client.send_request('update_season', season)

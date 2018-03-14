@@ -1,4 +1,5 @@
 from dsst_gtk3 import dialogs, gtk_ui
+from common import models
 
 
 class BaseDataHandlers:
@@ -8,23 +9,22 @@ class BaseDataHandlers:
 
     def do_add_player(self, entry):
         if entry.get_text():
-            # sql.Player.create(name=entry.get_text())
+            self.app.update_player(models.Player({'name': entry.get_text()}))
             entry.set_text('')
-            self.app.full_reload()
 
     def on_player_name_edited(self, _, index, value):
         row = self.app.ui.get_object('all_players_store')[index]
-        # sql.Player.update(name=value)\
-        #           .where(sql.Player.id == row[0])\
-        #           .execute()
-        self.app.full_reload()
+        player = models.Player({'id': row[0],
+                                'name': value,
+                                'hex_id': row[2]})
+        self.app.update_player(player)
 
     def on_player_hex_edited(self, _, index, value):
         row = self.app.ui.get_object('all_players_store')[index]
-        # sql.Player.update(hex_id=value)\
-        #           .where(sql.Player.id == row[0])\
-        #           .execute()
-        self.app.full_reload()
+        player = models.Player({'id': row[0],
+                                'name': row[1],
+                                'hex_id': value})
+        self.app.update_player(player)
 
     def do_add_drink(self, entry):
         if entry.get_text():

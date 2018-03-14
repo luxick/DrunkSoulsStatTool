@@ -25,6 +25,14 @@ class WriteFunctions:
          .execute())
 
     @staticmethod
+    def update_drink(drink: 'models.Drink', *_):
+        (sql.Drink
+         .insert(id=drink.id, name=drink.name, vol=drink.vol)
+         .on_conflict(update={sql.Drink.name: drink.name,
+                              sql.Drink.vol: drink.vol})
+         .execute())
+
+    @staticmethod
     def update_season(season: 'models.Season', *_):
         (sql.Season
          .insert(id=season.id, number=season.number, game_name=season.game_name, start_date=season.start_date,

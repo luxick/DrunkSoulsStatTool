@@ -28,20 +28,18 @@ class BaseDataHandlers:
 
     def do_add_drink(self, entry):
         if entry.get_text():
-            sql.Drink.create(name=entry.get_text(), vol=0)
+            drink = models.Drink({'name': entry.get_text(), 'vol': 0.00})
+            self.app.update_drink(drink)
             entry.set_text('')
-            self.app.full_reload()
 
     def on_drink_name_edited(self, _, index, value):
         row = self.app.ui.get_object('drink_store')[index]
-        # sql.Drink.update(name=value)\
-        #          .where(sql.Drink.id == row[0])\
-        #          .execute()
-        self.app.full_reload()
+        drink = [d for d in self.app.drinks.data if d.id == row[0]][0]
+        drink.name = value
+        self.app.update_drink(drink)
 
     def on_drink_vol_edited(self, _, index, value):
         row = self.app.ui.get_object('drink_store')[index]
-        # sql.Drink.update(vol=value) \
-        #          .where(sql.Drink.id == row[0]) \
-        #          .execute()
-        self.app.full_reload()
+        drink = [d for d in self.app.drinks.data if d.id == row[0]][0]
+        drink.vol = value
+        self.app.update_drink(drink)

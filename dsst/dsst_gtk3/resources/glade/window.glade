@@ -2246,6 +2246,7 @@
                     <child>
                       <object class="GtkTreeViewColumn">
                         <property name="title" translatable="yes">Name</property>
+                        <property name="expand">True</property>
                         <child>
                           <object class="GtkCellRendererText">
                             <property name="editable">True</property>

@@ -1,28 +1,23 @@
 import json
 import pickle
 import socket
-
 import sys
-
 import os
 
 from common import util, models
-from dsst_server import func_read, func_write, tokens
+from dsst_server import func_read, func_write
 from dsst_server.func_proxy import FunctionProxy
 from dsst_server.data_access import sql, sql_func
-
-PORT = 12345
-HOST = socket.gethostname()
-BUFFER_SIZE = 1024
+from dsst_server.config import DEFAULT_CONFIG
 
 
 class DsstServer:
-    def __init__(self, config={}):
+    def __init__(self, config):
         self.socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print('Created socket')
-
-        self.socket_server.bind((HOST, PORT))
-        print('Bound socket to {} on host {}'.format(PORT, HOST))
+        server_conf = config.get('server')
+        self.socket_server.bind((server_conf.get('host'), server_conf.get('port')))
+        print('Bound socket to {} on host {}'.format(server_conf.get('port'), server_conf.get('host')))
 
         # Initialize database
         db_config = config.get('database')
@@ -37,7 +32,7 @@ class DsstServer:
             'r': read_actions,
             'rw': read_actions + write_actions
         }
-        self.tokens = {token: parm_access[perms] for token, perms in tokens.TOKENS}
+        self.tokens = {token: parm_access[perms] for token, perms in config.get('tokens').items()}
         print('Loaded auth tokens: {}'.format(self.tokens.keys()))
 
     def run(self):
@@ -85,8 +80,21 @@ def load_config(config_path: str) -> dict:
         return json.load(config_file)
 
 
+def save_config(config: dict, config_path: str):
+    path = os.path.dirname(config_path)
+    if not os.path.isdir(path):
+        os.mkdir(path)
+    with open(config_path, 'wb') as file:
+        file.write(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8'))
+
+
 def main():
     config = os.path.join(os.path.expanduser('~'), '.config', 'dsst', 'server.json')
+    if not os.path.isfile(config):
+        save_config(DEFAULT_CONFIG, config)
+        print('No server config file found.\nCopied default config to "{}"\nPlease edit file before starting server.'
+              .format(config))
+        sys.exit(0)
     server = DsstServer(load_config(config))
     try:
         server.run()

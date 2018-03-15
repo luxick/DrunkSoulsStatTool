@@ -102,6 +102,13 @@ def create_death(app: 'gtk_ui.GtkUi'):
     :param app: Main Gtk application
     :return: Death object or None if dialog was canceled
     """
+    # Set penalties
+    default_drink = app.drinks.data[0].name
+    store = app.ui.get_object('player_penalties_store')
+    store.clear()
+    for player in app.ui.get_object('episode_players_store'):
+        store.append([None, player[1], default_drink, player[0]])
+
     # Run the dialog
     dialog = app.ui.get_object("edit_death_dialog")  # type: Gtk.Dialog
     result = dialog.run()

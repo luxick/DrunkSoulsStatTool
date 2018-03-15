@@ -96,12 +96,22 @@ def reload_episode_stats(app: 'gtk_ui.GtkUi'):
     drink_count = sum(len(death.penalties) for death in episode.deaths)
     app.ui.get_object('ep_drinks_label').set_text(str(drink_count))
     app.ui.get_object('ep_player_drinks_label').set_text(str(len(episode.deaths)))
+
+    # Compute booze stats
     dl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
     l_booze = round(dl_booze / 10, 2)
+    player_ml_booze = round((dl_booze * 100) / len(episode.players), 2)
     app.ui.get_object('ep_booze_label').set_text('{}l'.format(l_booze))
-    dl_booze = sum(len(death.penalties) * death.penalties[0].size for death in episode.deaths)
-    ml_booze = round(dl_booze * 10, 0)
-    app.ui.get_object('ep_player_booze_label').set_text('{}ml'.format(ml_booze))
+    app.ui.get_object('ep_player_booze_label').set_text('{}ml'.format(player_ml_booze))
+
+    # Compute pure alc stats
+    deaths = episode.deaths
+    dl_alc = 0
+    for death in deaths:
+        dl_alc += sum((penalty.size / 100) * penalty.drink.vol for penalty in death.penalties)
+    ml_alc = round(dl_alc * 100, 2)
+    app.ui.get_object('ep_alc_label').set_text('{}ml'.format(ml_alc))
+    # Compute hardest enemy stats
     enemy_list = [death.enemy.name for death in episode.deaths]
     sorted_list = Counter(enemy_list).most_common(1)
     if sorted_list:

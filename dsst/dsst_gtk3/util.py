@@ -14,7 +14,7 @@ DEFAULT_CONFIG = {
     'auto_connect': False,
     'servers': [{
         'host': 'localhost',
-        'port': 12345,
+        'port': 55225,
         'buffer_size': 1024,
         'auth_token': ''}
     ]

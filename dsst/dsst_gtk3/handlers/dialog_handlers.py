@@ -29,7 +29,6 @@ class DialogHandlers:
 
     def do_add_enemy(self, entry):
         if entry.get_text():
-            store = self.app.ui.get_object('enemy_season_store')
             enemy = models.Enemy()
             enemy.name = entry.get_text()
             enemy.season = self.app.get_selected_season_id()

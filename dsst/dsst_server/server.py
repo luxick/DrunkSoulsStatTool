@@ -5,7 +5,7 @@ import sys
 import os
 
 from common import util, models
-from dsst_server import func_read, func_write
+from dsst_server import func_read, func_write, auth
 from dsst_server.func_proxy import FunctionProxy
 from dsst_server.data_access import sql, sql_func
 from dsst_server.config import DEFAULT_CONFIG
@@ -16,8 +16,8 @@ class DsstServer:
         self.socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print('Created socket')
         server_conf = config.get('server')
-        self.socket_server.bind((server_conf.get('host'), server_conf.get('port')))
-        print('Bound socket to {} on host {}'.format(server_conf.get('port'), server_conf.get('host')))
+        self.socket_server.bind(('', server_conf.get('port')))
+        print('Bound socket to port {}'.format(server_conf.get('port')))
 
         # Initialize database
         db_config = config.get('database')
@@ -25,15 +25,10 @@ class DsstServer:
         sql_func.create_tables()
         print('Database initialized ({})'.format(sql.db.database))
 
-        # Load access tokens and map them to their allowed methods
-        read_actions = util.list_class_methods(func_read.ReadFunctions)
-        write_actions = util.list_class_methods(func_write.WriteFunctions)
-        parm_access = {
-            'r': read_actions,
-            'rw': read_actions + write_actions
-        }
-        self.tokens = {token: parm_access[perms] for token, perms in config.get('tokens').items()}
-        print('Loaded auth tokens: {}'.format(self.tokens.keys()))
+        # Load access tokens
+        auth.READ_TOKENS = config.get('tokens').get('readonly')
+        auth.WRITE_TOKENS = config.get('tokens').get('readwrite')
+        print('Auth tokens loaded')
 
     def run(self):
         self.socket_server.listen(5)
@@ -46,30 +41,23 @@ class DsstServer:
                 data = util.recv_msg(client)
                 request = pickle.loads(data)
                 print('Request: {}'.format(request))
-                # Validate auth token in request
-                token = request.get('auth_token')
-                if token not in self.tokens:
-                    util.send_msg(client, pickle.dumps({'success': False, 'message': 'Auth token invalid'}))
-                    print('Rejected request from {}. Auth token invalid ({})'.format(address, token))
-                    continue
-                # Check read functions
+                # Get requested function from function proxy
                 action_name = request.get('action')
-                if action_name in self.tokens[token]:
-                    action = getattr(FunctionProxy, action_name)
-                    try:
-                        value = action(*request.get('args'))
-                    except Exception as e:
-                        response = {'success': False, 'message': 'Exception was thrown on server.\n{}'.format(e)}
-                        util.send_msg(client, pickle.dumps(response))
-                        raise
-                    response = {'success': True, 'data': value}
+                action = getattr(FunctionProxy, action_name)
+                try:
+                    value = action(request.get('auth_token'), *request.get('args'))
+                except auth.AuthenticationError as e:
+                    response = e.get_response()
                     util.send_msg(client, pickle.dumps(response))
-                    continue
-                else:
-                    msg = 'Action does not exist on server ({})'.format(request.get('action'))
-                    util.send_msg(client, pickle.dumps({'success': False, 'message': msg}))
+                    raise
+                except Exception as e:
+                    response = {'success': False, 'message': 'Exception was thrown on server.\n{}'.format(e)}
+                    util.send_msg(client, pickle.dumps(response))
+                    raise
+                response = {'success': True, 'data': value}
+                util.send_msg(client, pickle.dumps(response))
             except Exception as e:
-                print(e)
+                print('Exception: ' + str(e))
             finally:
                 client.close()
                 print('Connection to client closed')

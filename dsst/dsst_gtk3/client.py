@@ -31,6 +31,7 @@ class Access:
             soc.close()
         return message.get('data')
 
+
 if __name__ == '__main__':
     access = Access({'host': 'europa', 'port': 12345, 'buffer_size': 1024, 'auth_token': 'a'})
     action = 'load_seasons'

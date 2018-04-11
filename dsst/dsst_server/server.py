@@ -24,54 +24,79 @@ class DsstServer:
         except Exception as e:
             print(e)
             sys.exit(1)
+
+        # Create ands bind the socket server
         self.socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         logging.info('Created socket')
         server_conf = config.get('server')
-        self.socket_server.bind(('', server_conf.get('port')))
-        logging.info('Bound socket to port {}'.format(server_conf.get('port')))
+        try:
+            self.socket_server.bind(('', server_conf.get('port')))
+            logging.info('Bound socket to port {}'.format(server_conf.get('port')))
+        except OSError as e:
+            logging.error('Cannot bind socket: {})'.format(e.strerror))
+            sys.exit(1)
 
-        # Initialize database
+        # Save Database credentials
         db_config = config.get('database')
-        sql.db.init(db_config.get('db_name'), user=db_config.get('user'), password=db_config.get('password'))
-        sql_func.create_tables()
-        logging.info('Database initialized ({})'.format(sql.db.database))
+        self.db_user = db_config.get('user')
+        self.db_name = db_config.get('db_name')
+        self.db_password = db_config.get('password')
 
         # Load access tokens
         auth.READ_TOKENS = config.get('tokens').get('readonly')
         auth.WRITE_TOKENS = config.get('tokens').get('readwrite')
         logging.info('Auth tokens loaded')
 
+    def process_request(self, request: dict) -> dict:
+        """ Process a requested function from a client
+        :param request: Request dictionary
+        :return: Response dictionary
+        """
+        # Get requested function from the function proxy
+        action_name = request.get('action')
+        action = getattr(FunctionProxy, action_name)
+        try:
+            # Open a database connection
+            sql.db.init(self.db_name, user=self.db_user, password=self.db_password)
+            logging.info('Connected to database ({})'.format(self.db_name))
+            # Execute the function
+            result = action(request.get('auth_token'), *request.get('args'))
+            logging.info('Operation executed successfully')
+            return {'success': True, 'data': result}
+        except auth.AuthenticationError as e:
+            logging.error(e.get_response())
+            return e.get_response()
+        except Exception as e:
+            logging.error('Exception was thrown: ' + str(e))
+            return {'success': False, 'message': 'Exception was thrown on server.'}
+        finally:
+            sql.db.close()
+            logging.info('Database connection closed')
+
     def run(self):
         self.socket_server.listen(5)
         logging.info('Socket is listening')
 
         while True:
+            # Accept client connection
             client, address = self.socket_server.accept()
-            try:
-                logging.info('Connection from {}'.format(address))
-                data = util.recv_msg(client)
-                request = pickle.loads(data)
-                logging.info('Request: {}'.format(request))
-                # Get requested function from function proxy
-                action_name = request.get('action')
-                action = getattr(FunctionProxy, action_name)
-                # Execute requested function
-                value = action(request.get('auth_token'), *request.get('args'))
-                # Send results back to client
-                response = {'success': True, 'data': value}
-                util.send_msg(client, pickle.dumps(response))
-                logging.info('Operation executed successfully')
-            except auth.AuthenticationError as e:
-                logging.error(e.get_response())
-                response = e.get_response()
-                util.send_msg(client, pickle.dumps(response))
-            except Exception as e:
-                logging.error('Exception was thrown: ' + str(e))
-                response = {'success': False, 'message': 'Exception was thrown on server.'}
-                util.send_msg(client, pickle.dumps(response))
-            finally:
-                client.close()
-                logging.info('Connection to client closed')
+            logging.info('-' * 30)
+            logging.info('Connection from {}'.format(address))
+
+            # Parse request from client
+            data = util.recv_msg(client)
+            request = pickle.loads(data)
+            logging.info('Request: {}'.format(request))
+
+            # Process request
+            response = self.process_request(request)
+
+            # Send data back to client
+            util.send_msg(client, pickle.dumps(response))
+
+            # Close connection
+            client.close()
+            logging.info('Connection to client closed')
 
 
 def load_config(config_path: str) -> dict:

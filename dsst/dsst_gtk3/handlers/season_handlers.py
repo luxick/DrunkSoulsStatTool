@@ -9,7 +9,7 @@ class SeasonHandlers:
     def do_add_season(self, *_):
         season = dialogs.edit_season(self.app.ui)
         if season:
-            self.app.update_season(season)
+            self.app.data_client.update_season(season)
             self.app.full_reload()
 
     def do_season_selected(self, *_):
@@ -23,7 +23,7 @@ class SeasonHandlers:
             return
         ep = dialogs.edit_episode(self.app, season_id)
         if ep:
-            self.app.update_episode(ep)
+            self.app.data_client.update_episode(ep)
             self.app.full_reload()
 
     def on_selected_episode_changed(self, *_):

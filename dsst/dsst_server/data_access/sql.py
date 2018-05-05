@@ -12,7 +12,7 @@ try:
     from peewee import *
 except ImportError:
     print('peewee package not installed')
-    sys.exit(0)
+    sys.exit(1)
 
 db = MySQLDatabase(None)
 
@@ -43,7 +43,7 @@ class Episode(Model):
     number = CharField()
     name = CharField(null=True)
     date = DateField(null=True)
-    season = ForeignKeyField(Season, backref='episodes')
+    season = ForeignKeyField(Season, backref='episodes', on_delete='CASCADE')
     players = ManyToManyField(Player, backref='episodes')
 
     class Meta:
@@ -63,7 +63,7 @@ class Enemy(Model):
     id = AutoField()
     name = CharField()
     boss = BooleanField()
-    season = ForeignKeyField(Season, backref='enemies')
+    season = ForeignKeyField(Season, backref='enemies', on_delete='CASCADE')
 
     class Meta:
         database = db
@@ -75,7 +75,7 @@ class Death(Model):
     time = TimeField(default=datetime.time(0, 0))
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
-    episode = ForeignKeyField(Episode, backref='deaths')
+    episode = ForeignKeyField(Episode, backref='deaths', on_delete='CASCADE')
 
     class Meta:
         database = db
@@ -85,8 +85,8 @@ class Penalty(Model):
     id = AutoField()
     size = DecimalField()
     drink = ForeignKeyField(Drink)
-    player = ForeignKeyField(Player, backref='penalties')
-    death = ForeignKeyField(Death, backref='penalties')
+    player = ForeignKeyField(Player, backref='penalties', on_delete='CASCADE')
+    death = ForeignKeyField(Death, backref='penalties', on_delete='CASCADE')
 
     class Meta:
         database = db
@@ -98,7 +98,7 @@ class Victory(Model):
     time = TimeField(default=datetime.time(0, 0))
     player = ForeignKeyField(Player)
     enemy = ForeignKeyField(Enemy)
-    episode = ForeignKeyField(Episode, backref='victories')
+    episode = ForeignKeyField(Episode, backref='victories', on_delete='CASCADE')
 
     class Meta:
         database = db

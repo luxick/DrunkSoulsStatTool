@@ -9,8 +9,8 @@ import shutil
 
 INTERPRETER = '/usr/bin/env python3'
 
-CLIENT_VERSION = '0.1'
-SERVER_VERSION = '0.1'
+CLIENT_VERSION = '0.2'
+SERVER_VERSION = '0.2'
 
 try:
     build_mode = sys.argv[1]

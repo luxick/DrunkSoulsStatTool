@@ -36,20 +36,20 @@ class DialogHandlers:
             self.app.ui.get_object('enemy_optional_ckeck').set_active(False)
             entry.set_text('')
 
-            self.app.update_enemy(enemy)
+            self.app.data_client.update_enemy(enemy)
 
     def on_enemy_name_edited(self, _, index, value):
         row = self.app.ui.get_object('enemy_season_store')[index]
         enemy = [enemy for enemy in self.app.enemies.data if enemy.id == row[4]][0]
         enemy.name = value
-        self.app.update_enemy(enemy)
+        self.app.data_client.update_enemy(enemy)
 
     def on_enemy_optional_edited(self, renderer, index):
         new_optional_value = not renderer.get_active()
         row = self.app.ui.get_object('enemy_season_store')[index]
         enemy = [enemy for enemy in self.app.enemies.data if enemy.id == row[4]][0]
         enemy.boss = new_optional_value
-        self.app.update_enemy(enemy)
+        self.app.data_client.update_enemy(enemy)
 
     def do_show_date_picker(self, entry: 'Gtk.Entry', *_):
         dialog = self.app.ui.get_object('date_picker_dialog')

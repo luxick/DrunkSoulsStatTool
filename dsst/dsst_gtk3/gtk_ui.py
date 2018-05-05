@@ -6,6 +6,7 @@ from dsst_gtk3.handlers import handlers
 from dsst_gtk3 import util, reload, client
 from common import models
 
+
 class GtkUi:
     """ The main UI class """
     def __init__(self, config: dict):
@@ -28,7 +29,7 @@ class GtkUi:
         self.ui.get_object('main_window').show_all()
         # Connect to data server
         config = config['servers'][0]
-        self.data_client = client.Access(config)
+        self.data_client = client.DataClient(self, config)
         # Create local data caches
         self.players = util.Cache()
         self.drinks = util.Cache()
@@ -61,42 +62,6 @@ class GtkUi:
 
     def reload(self):
         pass
-
-    def update_enemy(self, enemy: 'models.Enemy'):
-        with util.network_operation(self):
-            self.data_client.send_request('update_enemy', enemy)
-        self.full_reload()
-
-    def update_player(self, player: 'models.Player'):
-        with util.network_operation(self):
-            self.data_client.send_request('update_player', player)
-        self.full_reload()
-
-    def update_drink(self, drink: 'models.Drink'):
-        with util.network_operation(self):
-            self.data_client.send_request('update_drink', drink)
-        self.full_reload()
-
-    def save_death(self, death: 'models.Death'):
-        with util.network_operation(self):
-            self.data_client.send_request('save_death', death)
-        self.full_reload()
-
-    def save_victory(self, victory: 'models.Victory'):
-        with util.network_operation(self):
-            self.data_client.send_request('save_victory', victory)
-        self.full_reload()
-
-    def update_season(self, season: 'models.Season'):
-        with util.network_operation(self):
-            self.data_client.send_request('update_season', season)
-            self.seasons.valid = False
-
-    def update_episode(self, episode: 'models.Episode'):
-        with util.network_operation(self):
-            self.data_client.send_request('update_episode', episode)
-            self.episodes.valid = False
-            self.season_stats.valid = False
 
     def update_status_bar_meta(self):
         self.ui.get_object('connection_label').set_text(self.meta.get('connection'))

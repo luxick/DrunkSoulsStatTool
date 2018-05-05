@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.4 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
   <object class="GtkListStore" id="all_players_store">
@@ -53,6 +53,8 @@
       <column type="gchararray"/>
       <!-- column-name time -->
       <column type="gchararray"/>
+      <!-- column-name info -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkListStore" id="episode_players_store">
@@ -101,6 +103,31 @@
     <property name="step_increment">1</property>
     <property name="page_increment">1</property>
   </object>
+  <object class="GtkMenu" id="p_death">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="del_death">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Delete</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="do_delete_death" swapped="no"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="p_victory">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="del_victory">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Delete</property>
+        <signal name="activate" handler="do_delete_victory" swapped="no"/>
+      </object>
+    </child>
+  </object>
   <object class="GtkListStore" id="player_penalties_store">
     <columns>
       <!-- column-name penalty_id -->
@@ -137,6 +164,9 @@
     <property name="default_width">1200</property>
     <property name="default_height">700</property>
     <signal name="delete-event" handler="do_delete_event" swapped="no"/>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -710,12 +740,6 @@
                                     <property name="top_attach">7</property>
                                   </packing>
                                 </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -776,6 +800,7 @@
                                     <property name="can_focus">True</property>
                                     <property name="model">episode_deaths_store</property>
                                     <property name="search_column">0</property>
+                                    <signal name="button-press-event" handler="death_tree_clicked" swapped="no"/>
                                     <child internal-child="selection">
                                       <object class="GtkTreeSelection"/>
                                     </child>
@@ -823,6 +848,17 @@
                                         </child>
                                       </object>
                                     </child>
+                                    <child>
+                                      <object class="GtkTreeViewColumn">
+                                        <property name="title" translatable="yes">Comment</property>
+                                        <child>
+                                          <object class="GtkCellRendererText"/>
+                                          <attributes>
+                                            <attribute name="text">5</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
+                                    </child>
                                   </object>
                                 </child>
                               </object>
@@ -856,6 +892,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="model">episode_victories_store</property>
+                                    <signal name="button-press-event" handler="victory_tree_clicked" swapped="no"/>
                                     <child internal-child="selection">
                                       <object class="GtkTreeSelection"/>
                                     </child>
@@ -1294,9 +1331,6 @@
         </child>
       </object>
     </child>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="date_picker_dialog">
     <property name="can_focus">False</property>
@@ -1306,6 +1340,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -1408,9 +1445,6 @@
       <action-widget response="-5">button3</action-widget>
       <action-widget response="-6">button6</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="edit_episode_dialog">
     <property name="can_focus">False</property>
@@ -1420,6 +1454,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -1716,9 +1753,6 @@
       <action-widget response="-5">button1</action-widget>
       <action-widget response="-6">button2</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="edit_season_dialog">
     <property name="can_focus">False</property>
@@ -1728,6 +1762,9 @@
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
     <property name="attached_to">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -1937,9 +1974,6 @@
       <action-widget response="-5">button4</action-widget>
       <action-widget response="-6">button5</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="edit_victory_dialog">
     <property name="can_focus">False</property>
@@ -1949,6 +1983,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -2220,9 +2257,6 @@
       <action-widget response="-5">okButtonRename5</action-widget>
       <action-widget response="-6">cancelButtonRename1</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="manage_drinks_dialog">
     <property name="can_focus">False</property>
@@ -2233,6 +2267,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -2390,9 +2427,6 @@
     <action-widgets>
       <action-widget response="-5">okButtonRename3</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="manage_enemies_dialog">
     <property name="can_focus">False</property>
@@ -2403,6 +2437,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -2573,9 +2610,6 @@
     <action-widgets>
       <action-widget response="-5">okButtonRename1</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="manage_players_dialog">
     <property name="can_focus">False</property>
@@ -2586,6 +2620,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -2742,9 +2779,6 @@
     <action-widgets>
       <action-widget response="-5">okButtonRename2</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkAdjustment" id="shot_size_adjustment">
     <property name="upper">100</property>
@@ -2759,6 +2793,9 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -3120,8 +3157,5 @@
       <action-widget response="-5">okButtonRename4</action-widget>
       <action-widget response="-6">cancelButtonRename4</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
 </interface>

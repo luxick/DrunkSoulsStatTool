@@ -75,6 +75,17 @@ def get_combo_value(combo, index: int):
         return -1
 
 
+def get_tree_selection_value(tree: 'Gtk.TreeView', column: int):
+    """ Retrieve the a cell value of a tree view based on selected row and the choosen column
+    :param tree: Gtk.TreeView widget
+    :param column: Number of the column from which to retrieve the value
+    """
+    (model, pathlist) = tree.get_selection().get_selected_rows()
+    for path in pathlist:
+        tree_iter = model.get_iter(path)
+        return model.get_value(tree_iter, 0)
+
+
 def get_index_of_combo_model(widget, column: int, value: int):
     """Get the index of a value within a Gtk widgets model based on column an value
     :param widget: Any Gtk widget that can be bound to a ListStore or TreeStore
@@ -147,3 +158,17 @@ def save_config(config: dict, config_path: str):
         os.mkdir(path)
     with open(config_path, 'wb') as file:
         file.write(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8'))
+
+
+def show_context_menu(tree: 'Gtk.TreeView', event, popup: 'Gtk.Menu'):
+    path = tree.get_path_at_pos(int(event.x), int(event.y))
+    # Get the selection
+    selection = tree.get_selection()
+    # Get the selected path(s)
+    rows = selection.get_selected_rows()
+    # If not clicked on selection, change selected rows
+    if path:
+        if path[0] not in rows[1]:
+            selection.unselect_all()
+            selection.select_path(path[0])
+        popup.popup(None, None, None, None, 0, event.time)
